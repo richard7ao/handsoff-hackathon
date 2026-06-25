@@ -191,26 +191,6 @@ export function Dashboard() {
 
   return (
     <>
-      {/* ---------- top bar ---------- */}
-      <header className="topbar">
-        <div className="wrap topbar-inner">
-          <a className="brand" href={HOME_URL}>
-            <Logo />
-            Signal
-          </a>
-          <nav className="topbar-nav">
-            <div className="topbar-links">
-              <a href={HOME_URL}>Home</a>
-              <a href={DEMO_URL}>Demo</a>
-              <a href="#integrations">Integrations</a>
-            </div>
-            <a className="btn btn-accent" href={DEMO_URL}>
-              Go to Demo <span className="arrow">→</span>
-            </a>
-          </nav>
-        </div>
-      </header>
-
       <main className="dash">
         <div className="wrap">
           {/* ---------- header ---------- */}

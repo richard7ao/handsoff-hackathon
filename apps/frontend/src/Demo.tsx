@@ -1,17 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const HOME_URL = "/";
 const CONTENT_URL = "/content";
-
-function Logo() {
-  return (
-    <svg className="logo" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="21" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.35" />
-      <circle cx="32" cy="32" r="12" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.6" />
-      <circle cx="32" cy="32" r="5" fill="var(--accent)" />
-    </svg>
-  );
-}
 
 type Log = { ts: string; text: string; cls?: "ok" | "key" | "dim" | "warn" };
 type Phase = "idle" | "running" | "done";
@@ -166,24 +155,6 @@ export function Demo() {
 
   return (
     <>
-      <header className="topbar">
-        <div className="wrap topbar-inner">
-          <a className="brand" href={HOME_URL}>
-            <Logo />
-            Signal
-          </a>
-          <nav className="topbar-nav">
-            <div className="topbar-links">
-              <a href={HOME_URL}>← Back to home</a>
-              <a href={CONTENT_URL}>Content studio</a>
-            </div>
-            <a className="btn btn-accent" href={CONTENT_URL}>
-              Open content studio <span className="arrow">→</span>
-            </a>
-          </nav>
-        </div>
-      </header>
-
       <main className="demo">
         <div className="wrap">
           <div className="demo-head">

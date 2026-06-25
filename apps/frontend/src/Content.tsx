@@ -515,7 +515,7 @@ export function Content() {
 function channelLabel(d: Draft) {
   const p = PLATFORMS.find((x) => x.id === d.platform);
   const name = p ? p.label : d.platform;
-  return d.platform === "reddit" ? `${name} · ${d.channel}` : `${name} · ${d.channel}`;
+  return `${name} · ${d.channel}`;
 }
 
 function Meter({
