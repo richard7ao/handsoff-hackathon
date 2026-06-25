@@ -4,16 +4,6 @@ export type PageId = "dashboard" | "content" | "schedule" | "chat" | "marketplac
 
 /* ---------------- icons ---------------- */
 
-function GridIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  );
-}
 function PenIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -85,11 +75,10 @@ function ConnLight() {
 /* ---------------- page nav (every page except the landing page) ---------------- */
 
 const PAGES: { id: PageId; label: string; href: string; icon: JSX.Element }[] = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: <GridIcon /> },
-  { id: "content", label: "Studio", href: "/content", icon: <PenIcon /> },
-  { id: "schedule", label: "Schedule", href: "/schedule", icon: <CalendarIcon /> },
   { id: "chat", label: "Chat", href: "/chat", icon: <ChatIcon /> },
   { id: "marketplace", label: "Marketplace", href: "/marketplace", icon: <StoreIcon /> },
+  { id: "content", label: "Studio", href: "/content", icon: <PenIcon /> },
+  { id: "schedule", label: "Schedule", href: "/schedule", icon: <CalendarIcon /> },
   { id: "demo", label: "Demo", href: "/demo", icon: <PlayIcon /> },
 ];
 
@@ -145,7 +134,12 @@ export function Sidebar({
       </div>
 
       <nav className="rail-nav">
-        <a href="/dashboard" className="rail-link" title="Home">
+        <a
+          href="/dashboard"
+          className={`rail-link${current === "dashboard" ? " is-active" : ""}`}
+          aria-current={current === "dashboard" ? "page" : undefined}
+          title="Home"
+        >
           <span className="rail-ico"><HomeIcon /></span>
           <span className="rail-label">Home</span>
         </a>

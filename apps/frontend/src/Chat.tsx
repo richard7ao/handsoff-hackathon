@@ -94,14 +94,72 @@ export function Chat() {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
+  const [thinking, setThinking] = useState(false);
   const recRef = useRef<any>(null);
   const voiceRef = useRef(false);
+  const speakingRef = useRef(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const bigOrbRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<{ ctx: AudioContext; stream: MediaStream; raf: number } | null>(null);
   const sttSupported = useRef<boolean>(typeof window !== "undefined" && !!getRecognition()).current;
 
   useEffect(() => {
     voiceRef.current = voiceMode;
   }, [voiceMode]);
+
+  useEffect(() => {
+    speakingRef.current = speaking;
+  }, [speaking]);
+
+  // Real-time mic level → drives the orb size/glow (--level on .voice-orb).
+  const startMicLevel = useCallback(async () => {
+    if (audioRef.current) return;
+    const md = navigator.mediaDevices;
+    if (!md?.getUserMedia) return;
+    try {
+      const stream = await md.getUserMedia({ audio: true });
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new Ctx();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.82;
+      src.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      let smooth = 0;
+      const loop = () => {
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / data.length);
+        let level = Math.min(1, rms * 3.4);
+        // while the assistant is speaking, give the orb a gentle synthetic pulse
+        if (speakingRef.current) {
+          const pulse = 0.28 + 0.16 * Math.sin(performance.now() / 130);
+          level = Math.max(level, pulse);
+        }
+        smooth += (level - smooth) * 0.28;
+        bigOrbRef.current?.style.setProperty("--level", smooth.toFixed(3));
+        if (audioRef.current) audioRef.current.raf = requestAnimationFrame(loop);
+      };
+      audioRef.current = { ctx, stream, raf: requestAnimationFrame(loop) };
+    } catch {
+      /* mic permission denied — orb still works, just won't react */
+    }
+  }, []);
+
+  const stopMicLevel = useCallback(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    cancelAnimationFrame(a.raf);
+    a.stream.getTracks().forEach((t) => t.stop());
+    a.ctx.close().catch(() => undefined);
+    audioRef.current = null;
+    bigOrbRef.current?.style.setProperty("--level", "0");
+  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -112,11 +170,12 @@ export function Chat() {
       try {
         recRef.current?.stop();
         if (ttsSupported) window.speechSynthesis.cancel();
+        stopMicLevel();
       } catch {
         /* noop */
       }
     };
-  }, []);
+  }, [stopMicLevel]);
 
   const speak = useCallback((text: string, then?: () => void) => {
     if (!ttsSupported) {
@@ -141,11 +200,13 @@ export function Chat() {
       if (!text) return;
       setInput("");
       setMessages((m) => [...m, { role: "user", text }]);
+      setThinking(true);
       const answer = reply(text);
       window.setTimeout(() => {
+        setThinking(false);
         setMessages((m) => [...m, { role: "assistant", text: answer }]);
         if (voiceRef.current) speak(answer, () => startListening());
-      }, 450);
+      }, 650);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [input, speak],
@@ -194,11 +255,13 @@ export function Chat() {
     if (voiceMode) {
       setVoiceMode(false);
       stopListening();
+      stopMicLevel();
       if (ttsSupported) window.speechSynthesis.cancel();
       setSpeaking(false);
     } else {
       setVoiceMode(true);
       voiceRef.current = true;
+      startMicLevel();
       startListening();
     }
   };
@@ -227,6 +290,16 @@ export function Chat() {
                   <p>{m.text}</p>
                 </div>
               ))}
+              {thinking && (
+                <div className="chat-msg assistant">
+                  <span className="chat-role">Signal</span>
+                  <div className="chat-typing" aria-label="Signal is typing">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
+              )}
               <div ref={endRef} />
             </div>
           )}
@@ -295,14 +368,19 @@ export function Chat() {
         </div>
       </main>
 
-      {/* voice overlay */}
+      {/* voice overlay — large, volume-reactive orb */}
       {voiceMode && (
         <div className="voice-overlay" role="dialog" aria-label="Voice conversation">
-          <div className={`voice-orb ${speaking ? "speaking" : ""} ${listening ? "listening" : ""}`}>
-            <span className="vo-core" />
+          <div
+            ref={bigOrbRef}
+            className={`voice-orb reactive ${speaking ? "speaking" : ""} ${listening ? "listening" : ""}`}
+            style={{ "--level": 0 } as React.CSSProperties}
+          >
+            <span className="vo-glow" />
             <span className="vo-ring r1" />
             <span className="vo-ring r2" />
             <span className="vo-ring r3" />
+            <span className="vo-core" />
           </div>
           <div className="voice-status">
             {speaking ? "Speaking…" : listening ? "Listening…" : "Thinking…"}
