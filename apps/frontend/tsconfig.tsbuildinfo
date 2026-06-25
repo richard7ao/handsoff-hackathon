@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/chat.tsx","./src/content.tsx","./src/dashboard.tsx","./src/demo.tsx","./src/marketplace.tsx","./src/pipeline.tsx","./src/sidebar.tsx","./src/main.tsx","./vite.config.ts"],"errors":true,"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/chat.tsx","./src/content.tsx","./src/dashboard.tsx","./src/demo.tsx","./src/marketplace.tsx","./src/pipeline.tsx","./src/schedule.tsx","./src/sidebar.tsx","./src/main.tsx","./vite.config.ts"],"version":"5.9.3"}
