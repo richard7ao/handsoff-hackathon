@@ -28,6 +28,28 @@ import urllib.error
 import urllib.request
 
 
+def _autoload_env() -> None:
+    """Populate missing vars from ~/.hermes/.env so the scripts work under cron
+    (no sourced env) and locally. No-op in the Modal sandbox (file absent there;
+    creds arrive via terminal.env_passthrough). Never overrides existing vars."""
+    path = os.path.expanduser("~/.hermes/.env")
+    if not os.path.exists(path):
+        return
+    try:
+        with open(path, encoding="utf-8", errors="ignore") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
+    except OSError:
+        pass
+
+
+_autoload_env()
+
+
 def _env(name: str) -> str:
     val = os.environ.get(name, "").strip()
     if not val:
@@ -88,6 +110,30 @@ def insert(table: str, records: list) -> None:
     inserted = json.loads(payload) if payload.strip() else []
     print(f"OK: inserted {len(inserted)} row(s) into '{table}'.")
     print(json.dumps(inserted, indent=2))
+
+
+def select(table: str, params: str = "") -> list:
+    """GET rows. `params` is a raw PostgREST query string, e.g.
+    "status=eq.new&order=created_at.asc&limit=5". Returns a list of dicts."""
+    url, key = _base()
+    sep = "?" if params else ""
+    status, payload, _ = _request("GET", f"{url}/rest/v1/{table}{sep}{params}", key, None, {})
+    if status >= 400:
+        raise RuntimeError(f"select {table} failed ({status}): {payload}")
+    return json.loads(payload) if payload.strip() else []
+
+
+def update(table: str, match: str, patch: dict) -> list:
+    """PATCH rows matching `match` (raw PostgREST filter, e.g. "id=eq.3").
+    Returns the updated rows."""
+    url, key = _base()
+    body = json.dumps(patch).encode("utf-8")
+    status, payload, _ = _request(
+        "PATCH", f"{url}/rest/v1/{table}?{match}", key, body, {"Prefer": "return=representation"}
+    )
+    if status >= 400:
+        raise RuntimeError(f"update {table} failed ({status}): {payload}")
+    return json.loads(payload) if payload.strip() else []
 
 
 def main() -> None:
