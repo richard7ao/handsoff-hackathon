@@ -1,0 +1,25 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build outputs
+dist
+build
+.vercel
+.turbo
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# env
+.env
+.env.local
+.env.*.local
+
+# editor / os
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
