@@ -47,14 +47,13 @@ function IgGlyph() {
     </svg>
   );
 }
-function RedditGlyph() {
+function BlueskyGlyph() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <circle cx="12" cy="13.5" r="8" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="9" cy="13" r="1.15" fill="currentColor" />
-      <circle cx="15" cy="13" r="1.15" fill="currentColor" />
-      <path d="M9 16c1.8 1.3 4.2 1.3 6 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="18" cy="7" r="1.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M12 10.8C10.7 8.3 7.2 3.9 4.2 4c-1.6.1-1.7 2.2-1.6 3.5.2 2.6 1.5 6.6 6.1 7.3-2 .3-4 .8-3.4 3 .7 2.4 3.4 1 5-1.1 1-1.3 1.5-2.5 1.7-3 .2.5.7 1.7 1.7 3 1.6 2.1 4.3 3.5 5 1.1.6-2.2-1.4-2.7-3.4-3 4.6-.7 5.9-4.7 6.1-7.3.1-1.3 0-3.4-1.6-3.5-3-.1-6.5 4.3-7.8 6.8Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }
@@ -112,7 +111,7 @@ type Channel = {
 };
 
 const CHANNELS: Channel[] = [
-  { name: "Reddit", handle: "u/bellas_atx", glyph: <RedditGlyph />, posts: 604, reach: "341K", eng: "8.1%", trend: [20, 24, 22, 30, 36, 41, 52] },
+  { name: "Bluesky", handle: "@bellas-atx.bsky.social", glyph: <BlueskyGlyph />, posts: 604, reach: "341K", eng: "8.1%", trend: [20, 24, 22, 30, 36, 41, 52] },
   { name: "Instagram", handle: "@bellas.barbershop", glyph: <IgGlyph />, posts: 312, reach: "286K", eng: "6.2%", trend: [18, 19, 22, 26, 28, 33, 38] },
   { name: "X", handle: "@bellas_atx", glyph: <XGlyph />, posts: 248, reach: "92K", eng: "4.4%", trend: [12, 13, 11, 14, 13, 15, 16] },
   { name: "WhatsApp", handle: "Business API", glyph: <WaGlyph />, posts: 120, reach: "23K", eng: "11.3%", trend: [6, 7, 7, 8, 9, 9, 10] },
@@ -121,9 +120,9 @@ const CHANNELS: Channel[] = [
 type Update = { ts: string; tag: "Growth" | "Alert" | "Insight"; text: string };
 
 const UPDATES: Update[] = [
-  { ts: "08:02", tag: "Growth", text: "Reach +31% WoW. r/Austin and IG Reels drive 68% of new impressions." },
+  { ts: "08:02", tag: "Growth", text: "Reach +31% WoW. #Austin and IG Reels drive 68% of new impressions." },
   { ts: "07:41", tag: "Insight", text: "Local-question framing outperforms promos 2.4×. Biased the CMO agent toward it." },
-  { ts: "06:18", tag: "Alert", text: "Tue Reddit post dipped below threshold — Pulse rewrote and reposted." },
+  { ts: "06:18", tag: "Alert", text: "Tue Bluesky post dipped below threshold — Pulse rewrote and reposted." },
   { ts: "Tue", tag: "Growth", text: "Net follower growth crossed +1,000 this month. CPM down to $0.04." },
 ];
 

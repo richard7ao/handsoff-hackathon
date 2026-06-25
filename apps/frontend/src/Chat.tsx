@@ -41,21 +41,42 @@ function PlusGlyph() {
 
 type Seed = { icon: string; label: string; prompt: string };
 const SEEDS: Seed[] = [
-  { icon: "✎", label: "Draft a post", prompt: "Draft a Reddit post for my barbershop in my own voice." },
-  { icon: "◎", label: "Find my audience", prompt: "Where do my customers talk online? Find the best subreddits for a local coffee shop." },
+  { icon: "✎", label: "Draft a post", prompt: "Draft a Bluesky post for my barbershop in my own voice." },
+  { icon: "◎", label: "Find my audience", prompt: "Where do my customers talk online? Find the best Bluesky feeds for a local coffee shop." },
   { icon: "↻", label: "Improve a post", prompt: "My last post got 2 upvotes. How would you rewrite it to do better?" },
   { icon: "▤", label: "Build my brief", prompt: "Help me build a business brief — ask me the 5 intake questions." },
   { icon: "✦", label: "Buzz's choice", prompt: "Surprise me — show me what Buzz would do for a new gym this week." },
 ];
 
-/* ---------------- mock assistant ---------------- */
+/* ---------------- backend chat ---------------- */
 
-function reply(input: string): string {
+// In dev the Vite proxy forwards /api -> the Fastify backend (localhost:3000).
+// In prod, set VITE_API_URL to the deployed backend origin.
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
+type ApiMsg = { role: "user" | "assistant"; content: string };
+
+/** Calls the Gemini-backed /api/chat endpoint. Throws on any non-OK response. */
+async function fetchReply(history: ApiMsg[]): Promise<string> {
+  const res = await fetch(`${API_BASE}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: history }),
+  });
+  if (!res.ok) throw new Error(`chat ${res.status}`);
+  const data = (await res.json()) as { reply?: string };
+  if (!data.reply) throw new Error("empty reply");
+  return data.reply;
+}
+
+/* ---------------- mock assistant (offline fallback) ---------------- */
+
+function mockReply(input: string): string {
   const q = input.toLowerCase();
-  if (q.includes("audience") || q.includes("subreddit") || q.includes("where"))
-    return "I'd start where the intent already lives. For a local spot that's your city subreddit, r/smallbusiness, and 2–3 niche communities. I'll scan recent threads, rank them by fit, and surface the three with the warmest audience before drafting anything.";
+  if (q.includes("audience") || q.includes("feed") || q.includes("bluesky") || q.includes("where"))
+    return "I'd start where the intent already lives. On Bluesky that's your city's #hashtag feed, the #smallbusiness feed, and 2–3 niche custom feeds. I'll scan recent posts, rank them by fit, and surface the three with the warmest audience before drafting anything.";
   if (q.includes("draft") || q.includes("post") || q.includes("write"))
-    return "Here's a first pass in your voice: lead with a specific, lived detail — not a pitch. Something like \"12 years behind the chair taught me one thing about regulars…\" then one honest lesson, and a soft invite to visit. Want me to tailor it to a subreddit?";
+    return "Here's a first pass in your voice: lead with a specific, lived detail — not a pitch. Something like \"12 years behind the chair taught me one thing about regulars…\" then one honest lesson, and a soft invite to visit. Want me to tailor it to a Bluesky feed?";
   if (q.includes("improve") || q.includes("rewrite") || q.includes("upvote"))
     return "Low upvotes usually means the title was generic. I'd swap the opener for a concrete moment, cut the first sentence, and repost at a higher-traffic hour. Pulse would then watch it for 10-minute intervals and rewrite again if it stalls.";
   if (q.includes("brief") || q.includes("intake") || q.includes("question"))
@@ -98,6 +119,7 @@ export function Chat() {
   const recRef = useRef<any>(null);
   const voiceRef = useRef(false);
   const speakingRef = useRef(false);
+  const messagesRef = useRef<Msg[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
   const bigOrbRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<{ ctx: AudioContext; stream: MediaStream; raf: number } | null>(null);
@@ -162,6 +184,7 @@ export function Chat() {
   }, []);
 
   useEffect(() => {
+    messagesRef.current = messages;
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -199,14 +222,21 @@ export function Chat() {
       const text = (textArg ?? input).trim();
       if (!text) return;
       setInput("");
-      setMessages((m) => [...m, { role: "user", text }]);
       setThinking(true);
-      const answer = reply(text);
-      window.setTimeout(() => {
-        setThinking(false);
-        setMessages((m) => [...m, { role: "assistant", text: answer }]);
-        if (voiceRef.current) speak(answer, () => startListening());
-      }, 650);
+      const userMsg = { role: "user" as const, text };
+      setMessages((m) => [...m, userMsg]);
+      // history = everything committed so far + this new turn
+      const history: ApiMsg[] = [...messagesRef.current, userMsg].map((m) => ({
+        role: m.role,
+        content: m.text,
+      }));
+      fetchReply(history)
+        .catch(() => mockReply(text)) // graceful offline fallback
+        .then((answer) => {
+          setThinking(false);
+          setMessages((m) => [...m, { role: "assistant", text: answer }]);
+          if (voiceRef.current) speak(answer, () => startListening());
+        });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [input, speak],

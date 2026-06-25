@@ -13,11 +13,11 @@ function Logo() {
 
 /* ----------------------------- types ----------------------------- */
 
-type Platform = "reddit" | "instagram" | "x" | "whatsapp";
+type Platform = "bluesky" | "instagram" | "x" | "whatsapp";
 type Status = "posted" | "scheduled" | "draft";
 type ViewMode = "day" | "week";
 
-const PLATFORMS: Platform[] = ["reddit", "instagram", "x", "whatsapp"];
+const PLATFORMS: Platform[] = ["bluesky", "instagram", "x", "whatsapp"];
 
 type Post = {
   id: string;
@@ -43,7 +43,7 @@ type Item = {
 };
 
 const PLATFORM_LABEL: Record<Platform, string> = {
-  reddit: "Reddit",
+  bluesky: "Bluesky",
   instagram: "Instagram",
   x: "X",
   whatsapp: "WhatsApp",
@@ -51,15 +51,13 @@ const PLATFORM_LABEL: Record<Platform, string> = {
 
 function PlatformIcon({ platform }: { platform: Platform }) {
   switch (platform) {
-    case "reddit":
+    case "bluesky":
       return (
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <circle cx="12" cy="13" r="8" fill="currentColor" />
-          <circle cx="9" cy="12.5" r="1.4" fill="var(--panel)" />
-          <circle cx="15" cy="12.5" r="1.4" fill="var(--panel)" />
-          <path d="M9 16c1.8 1.2 4.2 1.2 6 0" fill="none" stroke="var(--panel)" strokeWidth="1.3" strokeLinecap="round" />
-          <circle cx="19" cy="6.5" r="1.6" fill="currentColor" />
-          <path d="M12 5l1-3 3 .8" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M12 10.8C10.7 8.3 7.2 3.9 4.2 4c-1.6.1-1.7 2.2-1.6 3.5.2 2.6 1.5 6.6 6.1 7.3-2 .3-4 .8-3.4 3 .7 2.4 3.4 1 5-1.1 1-1.3 1.5-2.5 1.7-3 .2.5.7 1.7 1.7 3 1.6 2.1 4.3 3.5 5 1.1.6-2.2-1.4-2.7-3.4-3 4.6-.7 5.9-4.7 6.1-7.3.1-1.3 0-3.4-1.6-3.5-3-.1-6.5 4.3-7.8 6.8Z"
+            fill="currentColor"
+          />
         </svg>
       );
     case "instagram":
@@ -143,14 +141,14 @@ const slotIndexOf = (time: string) => {
 const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/320/200`;
 
 const POSTS: Post[] = [
-  { id: "p1", day: 0, time: "08:30", platform: "reddit", channel: "r/Austin", title: "12 years running a barbershop in Austin taught me one thing about regulars", status: "posted", thumb: thumb("buzz-barber-1") },
+  { id: "p1", day: 0, time: "08:30", platform: "bluesky", channel: "#Austin", title: "12 years running a barbershop in Austin taught me one thing about regulars", status: "posted", thumb: thumb("buzz-barber-1") },
   { id: "p2", day: 0, time: "17:00", platform: "instagram", channel: "Reel", title: "Behind the chair: the Monday rush, in 20 seconds", status: "posted", thumb: thumb("buzz-reel-2") },
   { id: "p3", day: 1, time: "12:15", platform: "x", channel: "Post", title: "Unpopular opinion from a barbershop owner about walk-ins", status: "scheduled", thumb: thumb("buzz-x-3") },
-  { id: "p4", day: 2, time: "09:00", platform: "reddit", channel: "r/smallbusiness", title: "A few honest things Austin folks ask us about barbershops", status: "scheduled", thumb: thumb("buzz-barber-4") },
+  { id: "p4", day: 2, time: "09:00", platform: "bluesky", channel: "#smallbusiness", title: "A few honest things Austin folks ask us about barbershops", status: "scheduled", thumb: thumb("buzz-barber-4") },
   { id: "p5", day: 2, time: "18:30", platform: "whatsapp", channel: "Broadcast", title: "This week's quiet hours for our regulars", status: "scheduled", thumb: thumb("buzz-wa-5") },
   { id: "p6", day: 3, time: "10:00", platform: "instagram", channel: "Caption", title: "No gimmicks — just the work, done right, here in Austin", status: "scheduled", thumb: thumb("buzz-ig-6") },
   { id: "p7", day: 4, time: "16:45", platform: "x", channel: "Post", title: "Friday chair openings — first come, first served", status: "draft", thumb: thumb("buzz-x-7") },
-  { id: "p8", day: 5, time: "11:30", platform: "reddit", channel: "r/Austin", title: "Saturday walk-ins: what to expect and when to come in", status: "scheduled", thumb: thumb("buzz-barber-8") },
+  { id: "p8", day: 5, time: "11:30", platform: "bluesky", channel: "#Austin", title: "Saturday walk-ins: what to expect and when to come in", status: "scheduled", thumb: thumb("buzz-barber-8") },
   { id: "p9", day: 6, time: "19:00", platform: "instagram", channel: "Story", title: "Sunday wrap — the week at Bella's", status: "draft", thumb: thumb("buzz-ig-9") },
 ];
 
@@ -158,7 +156,7 @@ const POSTS: Post[] = [
 const PENDING: Item[] = [
   { id: "q1", date: null, time: null, platform: "instagram", channel: "Reel", title: "Fresh fade, slow motion — the Tuesday walk-in", status: "draft", thumb: thumb("buzz-pending-1") },
   { id: "q2", date: null, time: null, platform: "x", channel: "Post", title: "Three things every Austin barber wishes you knew", status: "draft", thumb: thumb("buzz-pending-2") },
-  { id: "q3", date: null, time: null, platform: "reddit", channel: "r/Austin", title: "We tried staying open late on Thursdays. Here's what happened.", status: "draft", thumb: thumb("buzz-pending-3") },
+  { id: "q3", date: null, time: null, platform: "bluesky", channel: "#Austin", title: "We tried staying open late on Thursdays. Here's what happened.", status: "draft", thumb: thumb("buzz-pending-3") },
 ];
 
 function buildItems(): Item[] {
@@ -360,7 +358,7 @@ export function Schedule() {
             </span>
             <h1>Your posting schedule.</h1>
             <p>
-              Everything Pulse has queued for this week — across Reddit, Instagram, X, and
+              Everything Pulse has queued for this week — across Bluesky, Instagram, X, and
               WhatsApp. It posts on its own; this is just where you can see and steer it.
             </p>
           </div>

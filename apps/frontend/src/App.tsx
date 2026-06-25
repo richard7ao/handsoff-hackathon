@@ -35,7 +35,7 @@ const PROBLEMS = [
   {
     n: "02",
     title: "They don't know where to talk",
-    body: "Their customers gather in specific subreddits and threads. The owner has never seen them, and wouldn't know what to say.",
+    body: "Their customers gather in specific Bluesky feeds and threads. The owner has never seen them, and wouldn't know what to say.",
   },
   {
     n: "03",
@@ -73,16 +73,16 @@ const AGENTS: Agent[] = [
     label: "Agent 02 · Research & content",
     name: "Scout",
     role: "the long-running researcher",
-    desc: "Reads Reddit, finds the audience, drafts a post, and scores it against the brief. Scout runs 30–45 minutes unattended — work a human would never sit through.",
-    stack: ["Hermes", "Modal", "Reddit API"],
+    desc: "Reads Bluesky, finds the audience, drafts a post, and scores it against the brief. Scout runs 30–45 minutes unattended — work a human would never sit through.",
+    stack: ["Hermes", "Modal", "Bluesky API"],
     handoff: "→ queues the post for Pulse",
   },
   {
     label: "Agent 03 · Posting & self-improvement",
     name: "Pulse",
     role: "the engagement loop",
-    desc: "Posts to Reddit, then checks engagement every 10 minutes. When upvotes lag, Pulse rewrites and reposts — logging its reasoning at every step.",
-    stack: ["Hermes cron", "Reddit API", "engagement loop"],
+    desc: "Posts to Bluesky, then checks engagement every 10 minutes. When likes lag, Pulse rewrites and reposts — logging its reasoning at every step.",
+    stack: ["Hermes cron", "Bluesky API", "engagement loop"],
     handoff: "↻ keeps improving, on its own",
   },
 ];

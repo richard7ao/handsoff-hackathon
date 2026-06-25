@@ -1068,18 +1068,18 @@ section {
   padding: 3px 10px;
 }
 
-.reddit-card {
+.bluesky-card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 22px 24px;
 }
 
-.demo-result.is-rewritten .reddit-card {
+.demo-result.is-rewritten .bluesky-card {
   border-color: var(--accent);
 }
 
-.reddit-meta {
+.bluesky-meta {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1088,12 +1088,12 @@ section {
   color: var(--muted);
 }
 
-.reddit-sub {
+.bluesky-sub {
   font-weight: 700;
   color: var(--ink);
 }
 
-.reddit-title {
+.bluesky-title {
   font-family: var(--font-serif);
   font-size: 1.45rem;
   font-weight: 700;
@@ -1101,14 +1101,14 @@ section {
   line-height: 1.2;
 }
 
-.reddit-body {
+.bluesky-body {
   margin-top: 10px;
   color: var(--muted);
   line-height: 1.6;
   font-size: 1rem;
 }
 
-.reddit-stats {
+.bluesky-stats {
   display: flex;
   align-items: center;
   gap: 18px;
@@ -1118,13 +1118,13 @@ section {
   color: var(--muted);
 }
 
-.reddit-stats .up {
+.bluesky-stats .up {
   color: var(--accent);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.reddit-live {
+.bluesky-live {
   margin-left: auto;
   color: #2e5a1c;
   font-size: 0.78rem;
@@ -3742,8 +3742,8 @@ section {
   background: var(--muted);
 }
 
-.plat-reddit .sched-plat-dot,
-.sched-plat-dot.plat-reddit {
+.plat-bluesky .sched-plat-dot,
+.sched-plat-dot.plat-bluesky {
   background: var(--phase1);
 }
 .plat-instagram .sched-plat-dot,
@@ -4443,7 +4443,7 @@ section {
   height: 30px;
 }
 
-.sched-plat-icon.plat-reddit { color: var(--phase1); }
+.sched-plat-icon.plat-bluesky { color: var(--phase1); }
 .sched-plat-icon.plat-instagram { color: var(--phase2); }
 .sched-plat-icon.plat-x { color: var(--ink); }
 .sched-plat-icon.plat-whatsapp { color: var(--phase3); }
