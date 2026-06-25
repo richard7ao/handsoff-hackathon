@@ -1,276 +1,291 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Sidebar, useRailCollapsed } from "./Sidebar";
 
-const HOME_URL = "/";
-const DEMO_URL = "/demo";
+/* ---------------- small primitives ---------------- */
 
-function Logo() {
+/** Flashing red "connected" light. */
+function ConnLight({ sm = false }: { sm?: boolean }) {
   return (
-    <svg className="logo" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="21" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.35" />
-      <circle cx="32" cy="32" r="12" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.6" />
-      <circle cx="32" cy="32" r="5" fill="var(--accent)" />
-    </svg>
-  );
-}
-
-/** Flashing red "connected" light used on the integration cards. */
-function ConnLight() {
-  return (
-    <span className="conn-light" aria-hidden="true">
+    <span className={`conn-light${sm ? " sm" : ""}`} aria-hidden="true">
       <span className="ring" />
       <span className="core" />
     </span>
   );
 }
 
-/* ---------------- mock data ---------------- */
+/** Compact inline sparkline. */
+function Spark({ data, neg = false }: { data: number[]; neg?: boolean }) {
+  const w = 96;
+  const h = 30;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const span = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * (w - 2) + 1;
+    const y = h - 3 - ((v - min) / span) * (h - 6);
+    return [x, y] as const;
+  });
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const last = pts[pts.length - 1];
+  const color = neg ? "var(--d-neg)" : "var(--d-pos)";
+  return (
+    <svg className="spark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+      <path d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r="1.9" fill={color} />
+    </svg>
+  );
+}
 
-type Stat = {
+/* ---------------- channel glyphs ---------------- */
+
+function IgGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+function RedditGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <circle cx="12" cy="13.5" r="8" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="9" cy="13" r="1.15" fill="currentColor" />
+      <circle cx="15" cy="13" r="1.15" fill="currentColor" />
+      <path d="M9 16c1.8 1.3 4.2 1.3 6 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="18" cy="7" r="1.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+function XGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+function WaGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M12 4a8 8 0 0 0-6.9 12l-1 4 4.1-1A8 8 0 1 0 12 4Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M9.4 9c-.2.5-.2 1.3.4 2.2.7 1.1 1.6 1.9 2.7 2.4.8.4 1.6.4 2.1.1" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/* ---------------- data ---------------- */
+
+type Range = "7D" | "30D" | "90D";
+
+const REACH: Record<Range, { points: number[]; ticks: string[] }> = {
+  "7D": { points: [38, 41, 37, 46, 52, 49, 58], ticks: ["Mon", "Wed", "Fri", "Sun"] },
+  "30D": { points: [82, 96, 91, 118, 134, 129, 162, 188, 205, 241, 268, 312], ticks: ["W1", "W6", "W12"] },
+  "90D": { points: [120, 148, 162, 201, 244, 268, 332, 401, 466, 558, 642, 742], ticks: ["Jan", "Feb", "Mar"] },
+};
+
+type Kpi = {
   label: string;
   value: string;
   delta: string;
-  up: boolean;
-  hint: string;
+  /** false => lower is better (e.g. cost) */
+  higherBetter?: boolean;
+  spark: number[];
 };
 
-const STATS: Stat[] = [
-  { label: "Posts published", value: "1,284", delta: "+18.2%", up: true, hint: "across all channels, last 30d" },
-  { label: "Total reach", value: "742K", delta: "+31.4%", up: true, hint: "unique impressions, last 30d" },
-  { label: "Engagement rate", value: "6.8%", delta: "+1.9pts", up: true, hint: "upvotes + comments / reach" },
-  { label: "Avg content score", value: "87/100", delta: "+4 pts", up: true, hint: "self-graded against brief" },
-  { label: "Rewrites triggered", value: "212", delta: "-9.1%", up: false, hint: "auto-rewrites when posts lag" },
-  { label: "Cost / 1K reach", value: "$0.04", delta: "-22.0%", up: false, hint: "fully autonomous, no ops time" },
+const KPIS: Kpi[] = [
+  { label: "Total reach", value: "742K", delta: "+31.4%", spark: [12, 14, 13, 18, 20, 19, 24, 28, 31, 36, 41, 48] },
+  { label: "Engagement rate", value: "6.8%", delta: "+1.9pts", spark: [4.1, 4.4, 4.2, 4.9, 5.3, 5.1, 5.8, 6.0, 6.2, 6.4, 6.6, 6.8] },
+  { label: "Posts published", value: "1,284", delta: "+18.2%", spark: [60, 72, 70, 88, 96, 101, 118, 132, 140, 156, 168, 180] },
+  { label: "Avg content score", value: "87", delta: "+4 pts", spark: [78, 79, 80, 81, 82, 83, 83, 84, 85, 86, 86, 87] },
+  { label: "Cost / 1K reach", value: "$0.04", delta: "-22.0%", higherBetter: false, spark: [0.09, 0.085, 0.08, 0.072, 0.066, 0.06, 0.055, 0.05, 0.047, 0.044, 0.042, 0.04] },
 ];
-
-// weekly reach, in thousands, last 12 weeks
-const GROWTH = [82, 96, 91, 118, 134, 129, 162, 188, 205, 241, 268, 312];
 
 type Channel = {
   name: string;
   handle: string;
-  status: "connected";
+  glyph: JSX.Element;
   posts: number;
   reach: string;
-  glyph: JSX.Element;
+  eng: string;
+  trend: number[];
 };
 
-function IgGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-      <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="12" cy="12" r="4.4" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" />
-    </svg>
-  );
-}
-
-function RedditGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-      <circle cx="12" cy="13.5" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="8.8" cy="13" r="1.25" fill="currentColor" />
-      <circle cx="15.2" cy="13" r="1.25" fill="currentColor" />
-      <path d="M8.8 16.2c1.9 1.4 4.5 1.4 6.4 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="18.4" cy="6.6" r="1.6" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M15.4 6.9 17 6.7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function XGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-      <path d="M4 4l16 16M20 4 4 20" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function WaGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-      <path
-        d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8L3.5 20.5l4.4-1.1A8.5 8.5 0 1 0 12 3.5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.2 8.6c-.2.5-.2 1.4.4 2.4.7 1.2 1.7 2 2.9 2.6.9.4 1.8.4 2.3.1"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 const CHANNELS: Channel[] = [
-  { name: "Instagram", handle: "@bellas.barbershop", status: "connected", posts: 312, reach: "286K", glyph: <IgGlyph /> },
-  { name: "Reddit", handle: "u/bellas_atx", status: "connected", posts: 604, reach: "341K", glyph: <RedditGlyph /> },
-  { name: "X", handle: "@bellas_atx", status: "connected", posts: 248, reach: "92K", glyph: <XGlyph /> },
-  { name: "WhatsApp", handle: "Business API", status: "connected", posts: 120, reach: "23K", glyph: <WaGlyph /> },
+  { name: "Reddit", handle: "u/bellas_atx", glyph: <RedditGlyph />, posts: 604, reach: "341K", eng: "8.1%", trend: [20, 24, 22, 30, 36, 41, 52] },
+  { name: "Instagram", handle: "@bellas.barbershop", glyph: <IgGlyph />, posts: 312, reach: "286K", eng: "6.2%", trend: [18, 19, 22, 26, 28, 33, 38] },
+  { name: "X", handle: "@bellas_atx", glyph: <XGlyph />, posts: 248, reach: "92K", eng: "4.4%", trend: [12, 13, 11, 14, 13, 15, 16] },
+  { name: "WhatsApp", handle: "Business API", glyph: <WaGlyph />, posts: 120, reach: "23K", eng: "11.3%", trend: [6, 7, 7, 8, 9, 9, 10] },
 ];
 
-type Update = { ts: string; tag: "growth" | "alert" | "insight"; text: string };
+type Update = { ts: string; tag: "Growth" | "Alert" | "Insight"; text: string };
 
 const UPDATES: Update[] = [
-  {
-    ts: "08:02",
-    tag: "growth",
-    text: "Reach is up 31% week-over-week. r/Austin and Instagram Reels are driving 68% of new impressions.",
-  },
-  {
-    ts: "07:41",
-    tag: "insight",
-    text: "Posts framed as a local question outperform promos by 2.4x. I've told the CMO agent to bias toward that voice.",
-  },
-  {
-    ts: "06:18",
-    tag: "alert",
-    text: "Engagement on the Tuesday Reddit post dipped below threshold — Pulse already rewrote and reposted it.",
-  },
-  {
-    ts: "Yesterday",
-    tag: "growth",
-    text: "Net follower growth crossed +1,000 for the month. Cost per 1K reach fell to $0.04.",
-  },
+  { ts: "08:02", tag: "Growth", text: "Reach +31% WoW. r/Austin and IG Reels drive 68% of new impressions." },
+  { ts: "07:41", tag: "Insight", text: "Local-question framing outperforms promos 2.4×. Biased the CMO agent toward it." },
+  { ts: "06:18", tag: "Alert", text: "Tue Reddit post dipped below threshold — Pulse rewrote and reposted." },
+  { ts: "Tue", tag: "Growth", text: "Net follower growth crossed +1,000 this month. CPM down to $0.04." },
 ];
 
-function taglabel(t: Update["tag"]) {
-  if (t === "growth") return "Growth";
-  if (t === "alert") return "Alert";
-  return "Insight";
-}
+const NAV = [
+  { id: "overview", label: "Overview" },
+  { id: "channels", label: "Channels" },
+  { id: "briefing", label: "Data briefing" },
+  { id: "integrations", label: "Integrations" },
+];
 
-/* ---------------- growth chart ---------------- */
+/* ---------------- main chart ---------------- */
 
-function GrowthChart({ data }: { data: number[] }) {
-  const w = 720;
-  const h = 220;
-  const pad = { t: 16, r: 8, b: 24, l: 8 };
-  const max = Math.max(...data) * 1.1;
-  const min = Math.min(...data) * 0.6;
+function ReachChart({ data }: { data: number[] }) {
+  const w = 760;
+  const h = 240;
+  const pad = { t: 14, r: 6, b: 8, l: 6 };
+  const max = Math.max(...data) * 1.08;
+  const min = Math.min(...data) * 0.7;
   const ix = (i: number) => pad.l + (i * (w - pad.l - pad.r)) / (data.length - 1);
   const iy = (v: number) => pad.t + (h - pad.t - pad.b) * (1 - (v - min) / (max - min));
-
-  const line = data.map((v, i) => `${i === 0 ? "M" : "L"}${ix(i).toFixed(1)} ${iy(v).toFixed(1)}`).join(" ");
+  const line = data.map((v, i) => `${i ? "L" : "M"}${ix(i).toFixed(1)} ${iy(v).toFixed(1)}`).join(" ");
   const area = `${line} L${ix(data.length - 1).toFixed(1)} ${h - pad.b} L${ix(0).toFixed(1)} ${h - pad.b} Z`;
-
   return (
-    <svg className="dash-chart" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label="Weekly reach growth">
+    <svg className="reach-chart" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" role="img" aria-label="Reach over selected period">
       <defs>
-        <linearGradient id="g-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+        <linearGradient id="reach-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--d-accent)" stopOpacity="0.16" />
+          <stop offset="100%" stopColor="var(--d-accent)" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {[0.25, 0.5, 0.75].map((g) => (
-        <line key={g} x1={pad.l} x2={w - pad.r} y1={pad.t + (h - pad.t - pad.b) * g} y2={pad.t + (h - pad.t - pad.b) * g} stroke="var(--border)" strokeWidth="1" />
+      {[0, 0.33, 0.66, 1].map((g) => (
+        <line key={g} x1={pad.l} x2={w - pad.r} y1={pad.t + (h - pad.t - pad.b) * g} y2={pad.t + (h - pad.t - pad.b) * g} stroke="var(--d-line)" strokeWidth="1" />
       ))}
-      <path d={area} fill="url(#g-fill)" />
-      <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {data.map((v, i) => (
-        <circle key={i} cx={ix(i)} cy={iy(v)} r={i === data.length - 1 ? 4.5 : 2.5} fill={i === data.length - 1 ? "var(--accent)" : "var(--panel)"} stroke="var(--accent)" strokeWidth="1.6" />
-      ))}
+      <path d={area} fill="url(#reach-fill)" />
+      <path d={line} fill="none" stroke="var(--d-accent)" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={ix(data.length - 1)} cy={iy(data[data.length - 1])} r="4" fill="var(--d-accent)" stroke="var(--d-surface)" strokeWidth="2" />
     </svg>
   );
 }
 
+/* ---------------- page ---------------- */
+
 export function Dashboard() {
-  // tiny "last synced" ticker so the page feels live
+  const [range, setRange] = useState<Range>("30D");
+  const [active, setActive] = useState("overview");
   const [synced, setSynced] = useState(0);
+  const [collapsed, setCollapsed] = useRailCollapsed();
   const t = useRef<number | null>(null);
+
   useEffect(() => {
-    t.current = window.setInterval(() => setSynced((s) => s + 1), 1000);
+    t.current = window.setInterval(() => setSynced((s) => (s + 1) % 60), 1000);
     return () => {
       if (t.current) window.clearInterval(t.current);
     };
   }, []);
 
-  return (
-    <>
-      <main className="dash">
-        <div className="wrap">
-          {/* ---------- header ---------- */}
-          <div className="dash-head">
-            <div>
-              <span className="label label-accent dash-eyebrow">
-                <span className="conn-light sm">
-                  <span className="ring" />
-                  <span className="core" />
-                </span>
-                Live · CMO Agent
-              </span>
-              <h1>How the CMO agent is performing.</h1>
-              <p>
-                Real-time analytics for the autonomous marketing loop — what it published, how it
-                landed, and how fast you're growing. Nobody at the keyboard.
-              </p>
-            </div>
-            <div className="dash-sync">
-              <span className="dash-sync-dot" />
-              Synced {synced === 0 ? "just now" : `${synced}s ago`}
-            </div>
-          </div>
+  const reach = useMemo(() => REACH[range], [range]);
 
-          {/* ---------- stat grid ---------- */}
-          <section className="dash-section">
-            <div className="dash-stats">
-              {STATS.map((s) => (
-                <div className="stat-card" key={s.label}>
-                  <span className="stat-label">{s.label}</span>
-                  <span className="stat-value">{s.value}</span>
-                  <span className={`stat-delta ${s.up ? "up" : "down"}`}>
-                    {s.up ? "▲" : "▼"} {s.delta}
-                  </span>
-                  <span className="stat-hint">{s.hint}</span>
-                </div>
+  return (
+    <div className={`dash-app${collapsed ? " is-rail-collapsed" : ""}`}>
+      {/* ---------- sidebar ---------- */}
+      <Sidebar current="dashboard" collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)}>
+        <nav className="rail-nav">
+          <span className="rail-section">Analytics</span>
+          {NAV.map((n) => (
+            <a
+              key={n.id}
+              href={`#${n.id}`}
+              className={`rail-link${active === n.id ? " is-active" : ""}`}
+              onClick={() => setActive(n.id)}
+              title={n.label}
+            >
+              <span className="rail-ico rail-ico-dot" aria-hidden="true" />
+              <span className="rail-label">{n.label}</span>
+            </a>
+          ))}
+        </nav>
+      </Sidebar>
+
+      {/* ---------- content ---------- */}
+      <main className="dash-main">
+        {/* toolbar */}
+        <header className="dash-toolbar">
+          <div className="toolbar-title">
+            <h1>CMO Agent · Overview</h1>
+            <span className="toolbar-sub">Autonomous marketing performance</span>
+          </div>
+          <div className="toolbar-actions">
+            <span className="sync-pill">
+              <span className="sync-dot" /> synced {synced === 0 ? "now" : `${synced}s`}
+            </span>
+            <div className="seg" role="tablist" aria-label="Time range">
+              {(["7D", "30D", "90D"] as Range[]).map((r) => (
+                <button key={r} role="tab" aria-selected={range === r} className={`seg-btn${range === r ? " is-on" : ""}`} onClick={() => setRange(r)}>
+                  {r}
+                </button>
               ))}
             </div>
+          </div>
+        </header>
+
+        <div className="dash-scroll">
+          {/* kpi strip */}
+          <section id="overview" className="kpi-strip">
+            {KPIS.map((k) => {
+              const down = k.delta.trim().startsWith("-");
+              const lowerBetter = k.higherBetter === false;
+              const good = down ? lowerBetter : !lowerBetter;
+              return (
+                <div className="kpi" key={k.label}>
+                  <div className="kpi-top">
+                    <span className="kpi-label">{k.label}</span>
+                    <span className={`kpi-delta ${good ? "pos" : "neg"}`}>{k.delta}</span>
+                  </div>
+                  <span className="kpi-value">{k.value}</span>
+                  <Spark data={k.spark} neg={!good} />
+                </div>
+              );
+            })}
           </section>
 
-          {/* ---------- growth + head of data ---------- */}
-          <section className="dash-section dash-split">
-            <div className="panel">
-              <div className="panel-head">
+          {/* chart + briefing */}
+          <section className="dash-grid">
+            <div className="card chart-card">
+              <div className="card-head">
                 <div>
-                  <span className="label label-muted">Reach growth · 12 weeks</span>
-                  <h2 className="panel-title">Compounding, week over week.</h2>
+                  <span className="card-eyebrow">Reach · {range}</span>
+                  <span className="card-figure">
+                    {reach.points[reach.points.length - 1]}K
+                    <span className="card-figure-delta pos">▲ +280% all-time</span>
+                  </span>
                 </div>
-                <span className="panel-badge up">+280% all-time</span>
+                <span className="legend">
+                  <span className="legend-swatch" /> reach
+                </span>
               </div>
-              <GrowthChart data={GROWTH} />
-              <div className="chart-axis">
-                <span>W1</span>
-                <span>W6</span>
-                <span>W12</span>
+              <ReachChart data={reach.points} />
+              <div className="chart-ticks">
+                {reach.ticks.map((tk) => (
+                  <span key={tk}>{tk}</span>
+                ))}
               </div>
             </div>
 
-            <div className="panel data-agent">
-              <div className="panel-head">
-                <div className="data-agent-id">
-                  <span className="data-avatar">A</span>
+            <div className="card briefing-card" id="briefing">
+              <div className="card-head">
+                <div className="briefing-id">
+                  <span className="briefing-avatar">A</span>
                   <div>
-                    <span className="label label-accent">Head of Data Agent</span>
-                    <h2 className="panel-title sm">Atlas</h2>
+                    <span className="card-eyebrow">Head of Data Agent</span>
+                    <span className="briefing-name">Atlas</span>
                   </div>
                 </div>
-                <span className="dot-pulse">
-                  <span className="ring" />
-                  <span className="core" />
+                <span className="briefing-live">
+                  <ConnLight sm /> live
                 </span>
               </div>
-              <p className="data-agent-intro">Your growth briefing, refreshed continuously.</p>
-              <ul className="update-feed">
+              <ul className="briefing-feed">
                 {UPDATES.map((u, i) => (
-                  <li className={`update tag-${u.tag}`} key={i}>
-                    <div className="update-meta">
-                      <span className="update-tag">{taglabel(u.tag)}</span>
-                      <span className="update-ts">{u.ts}</span>
-                    </div>
+                  <li className="briefing-row" key={i}>
+                    <span className="briefing-ts">{u.ts}</span>
+                    <span className={`chip chip-${u.tag.toLowerCase()}`}>{u.tag}</span>
                     <p>{u.text}</p>
                   </li>
                 ))}
@@ -278,60 +293,77 @@ export function Dashboard() {
             </div>
           </section>
 
-          {/* ---------- API integrations ---------- */}
-          <section className="dash-section" id="integrations">
-            <div className="dash-section-head">
-              <div>
-                <span className="label label-accent">API integrations</span>
-                <h2 className="panel-title">Connected channels.</h2>
-              </div>
+          {/* channel table */}
+          <section className="card table-card" id="channels">
+            <div className="card-head">
+              <span className="card-eyebrow">Channel performance · {range}</span>
+              <span className="muted-note">{CHANNELS.length} channels</span>
+            </div>
+            <table className="dash-table">
+              <thead>
+                <tr>
+                  <th>Channel</th>
+                  <th>Status</th>
+                  <th className="num">Posts</th>
+                  <th className="num">Reach</th>
+                  <th className="num">Engagement</th>
+                  <th className="trend-col">Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CHANNELS.map((c) => (
+                  <tr key={c.name}>
+                    <td>
+                      <span className="cell-channel">
+                        <span className="cell-glyph">{c.glyph}</span>
+                        <span>
+                          <span className="cell-name">{c.name}</span>
+                          <span className="cell-handle">{c.handle}</span>
+                        </span>
+                      </span>
+                    </td>
+                    <td>
+                      <span className="status-cell">
+                        <ConnLight sm /> Connected
+                      </span>
+                    </td>
+                    <td className="num">{c.posts}</td>
+                    <td className="num">{c.reach}</td>
+                    <td className="num">{c.eng}</td>
+                    <td className="trend-col">
+                      <Spark data={c.trend} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          {/* integrations */}
+          <section id="integrations">
+            <div className="block-head">
+              <span className="card-eyebrow">Connected sources</span>
               <span className="conn-summary">
-                <ConnLight /> {CHANNELS.length} connected · live
+                <ConnLight sm /> {CHANNELS.length} live
               </span>
             </div>
-            <div className="integration-grid">
+            <div className="int-grid">
               {CHANNELS.map((c) => (
-                <div className="integration-card" key={c.name}>
-                  <div className="integration-top">
-                    <span className="integration-glyph">{c.glyph}</span>
-                    <span className="integration-status">
-                      <ConnLight />
-                      Connected
-                    </span>
-                  </div>
-                  <h3 className="integration-name">{c.name}</h3>
-                  <span className="integration-handle">{c.handle}</span>
-                  <div className="integration-stats">
-                    <span>
-                      <strong>{c.posts}</strong> posts
-                    </span>
-                    <span>
-                      <strong>{c.reach}</strong> reach
-                    </span>
-                  </div>
+                <div className="int-tile" key={c.name}>
+                  <span className="int-glyph">{c.glyph}</span>
+                  <span className="int-meta">
+                    <span className="int-name">{c.name}</span>
+                    <span className="int-handle">{c.handle}</span>
+                  </span>
+                  <span className="int-status">
+                    <ConnLight sm /> Connected
+                  </span>
                 </div>
               ))}
             </div>
           </section>
         </div>
       </main>
-
-      {/* ---------- footer ---------- */}
-      <footer className="footer">
-        <div className="wrap footer-inner">
-          <div className="footer-left">
-            <Logo />
-            <span>© {new Date().getFullYear()} Signal</span>
-            <span className="api-status">
-              <span className="ok">●</span> all systems operational
-            </span>
-          </div>
-          <div className="footer-right">
-            <a href={HOME_URL}>Home</a>
-            <a href={DEMO_URL}>Demo</a>
-          </div>
-        </div>
-      </footer>
-    </>
+    </div>
   );
 }

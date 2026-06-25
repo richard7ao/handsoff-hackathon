@@ -87,6 +87,13 @@ const AGENTS: Agent[] = [
   },
 ];
 
+const SPONSORS = [
+  { name: "Cursor", mark: "C", bg: "#1a1a1a", fg: "#ffffff" },
+  { name: "PayPal", mark: "P", bg: "#003087", fg: "#ffffff" },
+  { name: "Supabase", mark: "S", bg: "#3ecf8e", fg: "#1a1a1a" },
+  { name: "Wassist", mark: "W", bg: "#c41e3a", fg: "#ffffff" },
+];
+
 export function App() {
   const [health, setHealth] = useState<Health | null>(null);
   const [healthError, setHealthError] = useState(false);
@@ -115,6 +122,7 @@ export function App() {
               <a href="/content">Studio</a>
               <a href="/marketplace">Marketplace</a>
               <a href="/dashboard">Dashboard</a>
+              <a href="/chat">Assistant</a>
             </div>
             <a className="btn btn-accent" href={DEMO_URL}>
               Go to Demo <span className="arrow">→</span>
@@ -148,6 +156,20 @@ export function App() {
               <a className="btn btn-ghost" href="#agents">
                 Meet the agents
               </a>
+            </div>
+            <div className="sponsors">
+              <span className="sponsors-label label label-muted">Sponsored by</span>
+              <span className="sponsors-rule" aria-hidden="true" />
+              <ul className="sponsors-list">
+                {SPONSORS.map((s) => (
+                  <li className="sponsor" key={s.name}>
+                    <span className="sponsor-mark" style={{ background: s.bg, color: s.fg }}>
+                      {s.mark}
+                    </span>
+                    <span className="sponsor-name">{s.name}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>

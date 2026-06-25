@@ -56,6 +56,17 @@ function TikTokGlyph() {
   );
 }
 
+function StarGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+      <path
+        d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 17l-5.3 2.7 1-5.8L3.5 9.7l5.9-.9L12 3.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 /* ---------------- mock data ---------------- */
 
 type Creator = {
@@ -65,6 +76,11 @@ type Creator = {
   location: string;
   specialisations: string[];
   audience: string[];
+  rating: number;
+  reviews: number;
+  followers: string;
+  rate: number;
+  available: boolean;
   email: string;
   x: string;
   instagram: string;
@@ -79,6 +95,11 @@ const CREATORS: Creator[] = [
     location: "Austin, TX",
     specialisations: ["Food & Drink", "Short-form video", "Recipes"],
     audience: ["Gen Z", "Foodies", "Local · ATX"],
+    rating: 4.9,
+    reviews: 128,
+    followers: "412K",
+    rate: 850,
+    available: true,
     email: "maya.chen@creators.mock",
     x: "https://x.com/mayamakes",
     instagram: "https://instagram.com/mayamakes",
@@ -91,6 +112,11 @@ const CREATORS: Creator[] = [
     location: "Los Angeles, CA",
     specialisations: ["Fitness", "Wellness", "Day-in-the-life"],
     audience: ["Millennials", "Gym-goers", "Health-conscious"],
+    rating: 4.8,
+    reviews: 96,
+    followers: "287K",
+    rate: 1200,
+    available: true,
     email: "jordan.reyes@creators.mock",
     x: "https://x.com/jordanlifts",
     instagram: "https://instagram.com/jordanlifts",
@@ -103,6 +129,11 @@ const CREATORS: Creator[] = [
     location: "Brooklyn, NY",
     specialisations: ["Beauty", "Skincare", "Tutorials"],
     audience: ["Gen Z", "Beauty buyers", "Women 18–34"],
+    rating: 5.0,
+    reviews: 211,
+    followers: "738K",
+    rate: 1500,
+    available: false,
     email: "aisha.bello@creators.mock",
     x: "https://x.com/aishabeauty",
     instagram: "https://instagram.com/aishabeauty",
@@ -115,6 +146,11 @@ const CREATORS: Creator[] = [
     location: "Denver, CO",
     specialisations: ["Home & DIY", "Reviews", "Tutorials"],
     audience: ["Homeowners", "Millennials", "Dads"],
+    rating: 4.7,
+    reviews: 64,
+    followers: "154K",
+    rate: 600,
+    available: true,
     email: "leo.martins@creators.mock",
     x: "https://x.com/leobuilds",
     instagram: "https://instagram.com/leobuilds",
@@ -127,6 +163,11 @@ const CREATORS: Creator[] = [
     location: "Miami, FL",
     specialisations: ["Travel", "Lifestyle", "Photography"],
     audience: ["Millennials", "Luxury", "Couples"],
+    rating: 4.9,
+    reviews: 142,
+    followers: "523K",
+    rate: 1800,
+    available: true,
     email: "priya.nair@creators.mock",
     x: "https://x.com/priyatravels",
     instagram: "https://instagram.com/priyatravels",
@@ -139,6 +180,11 @@ const CREATORS: Creator[] = [
     location: "Seattle, WA",
     specialisations: ["Tech", "Gadget reviews", "Explainers"],
     audience: ["Gen Z", "Early adopters", "Students"],
+    rating: 4.6,
+    reviews: 88,
+    followers: "201K",
+    rate: 900,
+    available: true,
     email: "sam.okafor@creators.mock",
     x: "https://x.com/samtechtips",
     instagram: "https://instagram.com/samtechtips",
@@ -151,6 +197,11 @@ const CREATORS: Creator[] = [
     location: "San Francisco, CA",
     specialisations: ["Food & Drink", "Vlogs", "Local guides"],
     audience: ["Foodies", "Local · SF", "Gen Z"],
+    rating: 4.8,
+    reviews: 73,
+    followers: "168K",
+    rate: 700,
+    available: false,
     email: "hana.kim@creators.mock",
     x: "https://x.com/hanaeats",
     instagram: "https://instagram.com/hanaeats",
@@ -163,6 +214,11 @@ const CREATORS: Creator[] = [
     location: "Chicago, IL",
     specialisations: ["Fitness", "Nutrition", "Coaching"],
     audience: ["Millennials", "Athletes", "Men 25–40"],
+    rating: 4.7,
+    reviews: 109,
+    followers: "342K",
+    rate: 1100,
+    available: true,
     email: "marcus.hill@creators.mock",
     x: "https://x.com/marcusfits",
     instagram: "https://instagram.com/marcusfits",
@@ -175,6 +231,11 @@ const CREATORS: Creator[] = [
     location: "New York, NY",
     specialisations: ["Fashion", "Styling", "Hauls"],
     audience: ["Gen Z", "Fashion buyers", "Women 18–34"],
+    rating: 4.9,
+    reviews: 187,
+    followers: "604K",
+    rate: 1600,
+    available: true,
     email: "elena.rossi@creators.mock",
     x: "https://x.com/elenastyle",
     instagram: "https://instagram.com/elenastyle",
@@ -186,6 +247,20 @@ const CREATORS: Creator[] = [
 const ALL_SPECIALISATIONS = Array.from(
   new Set(CREATORS.flatMap((c) => c.specialisations)),
 ).sort();
+
+type SortKey = "rating" | "followers" | "rate-asc" | "rate-desc";
+
+const SORTS: { key: SortKey; label: string }[] = [
+  { key: "rating", label: "Top rated" },
+  { key: "followers", label: "Most followers" },
+  { key: "rate-asc", label: "Rate: low to high" },
+  { key: "rate-desc", label: "Rate: high to low" },
+];
+
+function followersToNum(f: string) {
+  const n = parseFloat(f);
+  return f.toUpperCase().includes("K") ? n * 1_000 : n;
+}
 
 function ContactButton({
   href,
@@ -215,12 +290,24 @@ function CreatorCard({ c }: { c: Creator }) {
     <article className="mp-card">
       <div className="mp-photo">
         <img src={c.photo} alt={`${c.name}, UGC creator`} loading="lazy" />
+        <span className={`mp-avail ${c.available ? "is-open" : "is-busy"}`}>
+          {c.available ? "Available" : "Booked"}
+        </span>
       </div>
       <div className="mp-body">
         <div className="mp-id">
-          <h3>{c.name}</h3>
+          <div className="mp-id-top">
+            <h3>{c.name}</h3>
+            <span className="mp-rating">
+              <StarGlyph />
+              {c.rating.toFixed(1)}
+              <span className="mp-reviews">({c.reviews})</span>
+            </span>
+          </div>
           <span className="mp-handle">{c.handle}</span>
-          <span className="mp-loc">{c.location}</span>
+          <span className="mp-loc">
+            {c.location} · {c.followers} followers
+          </span>
         </div>
 
         <div className="mp-tagblock">
@@ -245,19 +332,25 @@ function CreatorCard({ c }: { c: Creator }) {
           </div>
         </div>
 
-        <div className="mp-contacts">
-          <ContactButton href={`mailto:${c.email}`} label={`Email ${c.name}`}>
-            <MailGlyph />
-          </ContactButton>
-          <ContactButton href={c.x} label={`${c.name} on X`}>
-            <XGlyph />
-          </ContactButton>
-          <ContactButton href={c.instagram} label={`${c.name} on Instagram`}>
-            <IgGlyph />
-          </ContactButton>
-          <ContactButton href={c.tiktok} label={`${c.name} on TikTok`}>
-            <TikTokGlyph />
-          </ContactButton>
+        <div className="mp-foot">
+          <div className="mp-rate">
+            <span className="mp-rate-val">${c.rate.toLocaleString()}</span>
+            <span className="mp-rate-unit">/ deliverable</span>
+          </div>
+          <div className="mp-contacts">
+            <ContactButton href={`mailto:${c.email}`} label={`Email ${c.name}`}>
+              <MailGlyph />
+            </ContactButton>
+            <ContactButton href={c.x} label={`${c.name} on X`}>
+              <XGlyph />
+            </ContactButton>
+            <ContactButton href={c.instagram} label={`${c.name} on Instagram`}>
+              <IgGlyph />
+            </ContactButton>
+            <ContactButton href={c.tiktok} label={`${c.name} on TikTok`}>
+              <TikTokGlyph />
+            </ContactButton>
+          </div>
         </div>
       </div>
     </article>
@@ -267,10 +360,11 @@ function CreatorCard({ c }: { c: Creator }) {
 export function Marketplace() {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string | null>(null);
+  const [sort, setSort] = useState<SortKey>("rating");
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return CREATORS.filter((c) => {
+    const filtered = CREATORS.filter((c) => {
       const matchesSpec = !active || c.specialisations.includes(active);
       const matchesQuery =
         !q ||
@@ -281,91 +375,93 @@ export function Marketplace() {
         c.audience.some((a) => a.toLowerCase().includes(q));
       return matchesSpec && matchesQuery;
     });
-  }, [query, active]);
+
+    return filtered.sort((a, b) => {
+      if (sort === "rating") return b.rating - a.rating || b.reviews - a.reviews;
+      if (sort === "followers") return followersToNum(b.followers) - followersToNum(a.followers);
+      if (sort === "rate-asc") return a.rate - b.rate;
+      return b.rate - a.rate;
+    });
+  }, [query, active, sort]);
 
   return (
-    <>
-      {/* ---------- top bar ---------- */}
-      <header className="topbar">
-        <div className="wrap topbar-inner">
-          <a className="brand" href={HOME_URL}>
+    <main className="mp">
+      <div className="wrap">
+        {/* ---------- header ---------- */}
+        <div className="mp-head">
+          <a className="mp-brand" href={HOME_URL}>
             <Logo />
             Signal
+            <span className="mp-brand-sub">Creator Marketplace</span>
           </a>
-          <nav className="topbar-nav">
-            <div className="topbar-links">
-              <a href={HOME_URL}>Home</a>
-              <a href="/dashboard">Dashboard</a>
-              <a href={DEMO_URL}>Demo</a>
-            </div>
-            <a className="btn btn-accent" href={DEMO_URL} target="_blank" rel="noreferrer">
-              Go to Demo <span className="arrow">→</span>
-            </a>
-          </nav>
-        </div>
-      </header>
-
-      <main className="mp">
-        <div className="wrap">
-          {/* ---------- header ---------- */}
-          <div className="mp-head">
-            <span className="label label-accent mp-eyebrow">UGC Marketplace</span>
-            <h1>Find a creator who already speaks to your audience.</h1>
-            <p>
-              Browse vetted user-generated-content creators by specialisation and audience.
-              Reach out directly — email, X, Instagram, or TikTok.
-            </p>
-          </div>
-
-          {/* ---------- search + filters ---------- */}
-          <div className="mp-controls">
-            <input
-              className="mp-search"
-              type="search"
-              placeholder="Search creators, niches, audiences…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="Search creators"
-            />
-            <div className="mp-filters" role="group" aria-label="Filter by specialisation">
-              <button
-                className={`mp-chip ${active === null ? "is-active" : ""}`}
-                onClick={() => setActive(null)}
-              >
-                All
-              </button>
-              {ALL_SPECIALISATIONS.map((s) => (
-                <button
-                  key={s}
-                  className={`mp-chip ${active === s ? "is-active" : ""}`}
-                  onClick={() => setActive((cur) => (cur === s ? null : s))}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <p className="mp-count">
-            {results.length} creator{results.length === 1 ? "" : "s"}
-            {active ? ` in ${active}` : ""}
+          <h1>Hire UGC creators by specialisation and audience.</h1>
+          <p>
+            Browse vetted creators, compare rates and reach, then reach out directly —
+            email, X, Instagram, or TikTok.
           </p>
-
-          {/* ---------- grid ---------- */}
-          {results.length > 0 ? (
-            <div className="mp-grid">
-              {results.map((c) => (
-                <CreatorCard c={c} key={c.handle} />
-              ))}
-            </div>
-          ) : (
-            <p className="mp-empty">No creators match that search yet. Try a different niche.</p>
-          )}
         </div>
-      </main>
+
+        {/* ---------- search + filters ---------- */}
+        <div className="mp-controls">
+          <input
+            className="mp-search"
+            type="search"
+            placeholder="Search creators, niches, audiences…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search creators"
+          />
+          <select
+            className="mp-sort"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            aria-label="Sort creators"
+          >
+            {SORTS.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mp-filters" role="group" aria-label="Filter by specialisation">
+          <button
+            className={`mp-chip ${active === null ? "is-active" : ""}`}
+            onClick={() => setActive(null)}
+          >
+            All
+          </button>
+          {ALL_SPECIALISATIONS.map((s) => (
+            <button
+              key={s}
+              className={`mp-chip ${active === s ? "is-active" : ""}`}
+              onClick={() => setActive((cur) => (cur === s ? null : s))}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <p className="mp-count">
+          {results.length} creator{results.length === 1 ? "" : "s"}
+          {active ? ` in ${active}` : ""} available to hire
+        </p>
+
+        {/* ---------- grid ---------- */}
+        {results.length > 0 ? (
+          <div className="mp-grid">
+            {results.map((c) => (
+              <CreatorCard c={c} key={c.handle} />
+            ))}
+          </div>
+        ) : (
+          <p className="mp-empty">No creators match that search yet. Try a different niche.</p>
+        )}
+      </div>
 
       {/* ---------- footer ---------- */}
-      <footer className="footer">
+      <footer className="footer mp-footer">
         <div className="wrap footer-inner">
           <div className="footer-left">
             <Logo />
@@ -380,6 +476,6 @@ export function Marketplace() {
           </div>
         </div>
       </footer>
-    </>
+    </main>
   );
 }
