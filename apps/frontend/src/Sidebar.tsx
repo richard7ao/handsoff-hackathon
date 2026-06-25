@@ -1,17 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 
-export type PageId = "dashboard" | "content" | "schedule" | "chat" | "marketplace" | "demo";
+export type PageId = "dashboard" | "schedule" | "chat" | "marketplace";
 
 /* ---------------- icons ---------------- */
 
-function PenIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path d="M4 20l1-4L16 5l3 3L8 19l-4 1Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M14 7l3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
-  );
-}
 function CalendarIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -27,14 +19,6 @@ function StoreIcon() {
       <path d="M4 9h16l-1-4H5L4 9Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
       <path d="M5 9v10h14V9" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
       <path d="M10 19v-5h4v5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function PlayIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M10 8.5l5 3.5-5 3.5V8.5Z" fill="currentColor" />
     </svg>
   );
 }
@@ -77,10 +61,50 @@ function ConnLight() {
 const PAGES: { id: PageId; label: string; href: string; icon: JSX.Element }[] = [
   { id: "chat", label: "Chat", href: "/chat", icon: <ChatIcon /> },
   { id: "marketplace", label: "Marketplace", href: "/marketplace", icon: <StoreIcon /> },
-  { id: "content", label: "Studio", href: "/content", icon: <PenIcon /> },
   { id: "schedule", label: "Schedule", href: "/schedule", icon: <CalendarIcon /> },
-  { id: "demo", label: "Demo", href: "/demo", icon: <PlayIcon /> },
 ];
+
+/* ---------------- analytics nav (dashboard in-page sections, persistent on every page) ---------------- */
+
+const ANALYTICS_NAV = [
+  { id: "overview", label: "Overview" },
+  { id: "channels", label: "Channels" },
+  { id: "briefing", label: "Data briefing" },
+  { id: "integrations", label: "Integrations" },
+];
+
+function AnalyticsNav({ current }: { current: PageId }) {
+  const onDashboard = current === "dashboard";
+  const [hash, setHash] = useState(() => (typeof location !== "undefined" ? location.hash.slice(1) : ""));
+
+  useEffect(() => {
+    if (!onDashboard) return;
+    const onHashChange = () => setHash(location.hash.slice(1));
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [onDashboard]);
+
+  return (
+    <nav className="rail-nav">
+      <span className="rail-section">Analytics</span>
+      {ANALYTICS_NAV.map((n) => {
+        const isActive = onDashboard && hash === n.id;
+        return (
+          <a
+            key={n.id}
+            href={`/dashboard#${n.id}`}
+            className={`rail-link${isActive ? " is-active" : ""}`}
+            aria-current={isActive ? "true" : undefined}
+            title={n.label}
+          >
+            <span className="rail-ico rail-ico-dot" aria-hidden="true" />
+            <span className="rail-label">{n.label}</span>
+          </a>
+        );
+      })}
+    </nav>
+  );
+}
 
 /* ---------------- collapse state (shared, persisted) ---------------- */
 
@@ -157,6 +181,8 @@ export function Sidebar({
           </a>
         ))}
       </nav>
+
+      <AnalyticsNav current={current} />
 
       {children}
 

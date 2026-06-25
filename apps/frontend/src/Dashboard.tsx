@@ -127,13 +127,6 @@ const UPDATES: Update[] = [
   { ts: "Tue", tag: "Growth", text: "Net follower growth crossed +1,000 this month. CPM down to $0.04." },
 ];
 
-const NAV = [
-  { id: "overview", label: "Overview" },
-  { id: "channels", label: "Channels" },
-  { id: "briefing", label: "Data briefing" },
-  { id: "integrations", label: "Integrations" },
-];
-
 /* ---------------- main chart ---------------- */
 
 function ReachChart({ data }: { data: number[] }) {
@@ -168,7 +161,6 @@ function ReachChart({ data }: { data: number[] }) {
 
 export function Dashboard() {
   const [range, setRange] = useState<Range>("30D");
-  const [active, setActive] = useState("overview");
   const [synced, setSynced] = useState(0);
   const [collapsed, setCollapsed] = useRailCollapsed();
   const t = useRef<number | null>(null);
@@ -185,23 +177,7 @@ export function Dashboard() {
   return (
     <div className={`dash-app${collapsed ? " is-rail-collapsed" : ""}`}>
       {/* ---------- sidebar ---------- */}
-      <Sidebar current="dashboard" collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)}>
-        <nav className="rail-nav">
-          <span className="rail-section">Analytics</span>
-          {NAV.map((n) => (
-            <a
-              key={n.id}
-              href={`#${n.id}`}
-              className={`rail-link${active === n.id ? " is-active" : ""}`}
-              onClick={() => setActive(n.id)}
-              title={n.label}
-            >
-              <span className="rail-ico rail-ico-dot" aria-hidden="true" />
-              <span className="rail-label">{n.label}</span>
-            </a>
-          ))}
-        </nav>
-      </Sidebar>
+      <Sidebar current="dashboard" collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
 
       {/* ---------- content ---------- */}
       <main className="dash-main">

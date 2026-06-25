@@ -120,8 +120,8 @@ export function App() {
               <a href="#how">How it works</a>
               <a href="#agents">The agents</a>
             </div>
-            <a className="btn btn-accent" href={DEMO_URL}>
-              Go to Demo <span className="arrow">→</span>
+            <a className="btn btn-accent" href={CTA_URL}>
+              Open Assistant <span className="arrow">→</span>
             </a>
           </nav>
         </div>
@@ -146,8 +146,8 @@ export function App() {
               engagement.
             </p>
             <div className="hero-actions">
-              <a className="btn btn-accent" href={DEMO_URL}>
-                Go to Demo <span className="arrow">→</span>
+              <a className="btn btn-accent" href={CTA_URL}>
+                Open Assistant <span className="arrow">→</span>
               </a>
               <a className="btn btn-ghost" href="#agents">
                 Meet the agents
@@ -260,8 +260,8 @@ export function App() {
               self-improving post — no human at the keyboard.
             </p>
             <div className="cta-actions">
-              <a className="btn btn-accent" href={DEMO_URL}>
-                Go to Demo <span className="arrow">→</span>
+              <a className="btn btn-accent" href={CTA_URL}>
+                Open Assistant <span className="arrow">→</span>
               </a>
               <a className="btn btn-dark" href="#top">
                 Back to top
@@ -295,8 +295,8 @@ export function App() {
             <a href="#problem">Problem</a>
             <a href="#how">How it works</a>
             <a href="#agents">Agents</a>
-            <a href={DEMO_URL}>
-              Go to Demo →
+            <a href={CTA_URL}>
+              Open Assistant →
             </a>
           </div>
         </div>

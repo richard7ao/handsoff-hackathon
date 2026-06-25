@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { AppShell } from "./Sidebar";
 
 function Logo() {
@@ -15,6 +15,9 @@ function Logo() {
 
 type Platform = "reddit" | "instagram" | "x" | "whatsapp";
 type Status = "posted" | "scheduled" | "draft";
+type ViewMode = "day" | "week";
+
+const PLATFORMS: Platform[] = ["reddit", "instagram", "x", "whatsapp"];
 
 type Post = {
   id: string;
@@ -45,6 +48,52 @@ const PLATFORM_LABEL: Record<Platform, string> = {
   x: "X",
   whatsapp: "WhatsApp",
 };
+
+function PlatformIcon({ platform }: { platform: Platform }) {
+  switch (platform) {
+    case "reddit":
+      return (
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <circle cx="12" cy="13" r="8" fill="currentColor" />
+          <circle cx="9" cy="12.5" r="1.4" fill="var(--panel)" />
+          <circle cx="15" cy="12.5" r="1.4" fill="var(--panel)" />
+          <path d="M9 16c1.8 1.2 4.2 1.2 6 0" fill="none" stroke="var(--panel)" strokeWidth="1.3" strokeLinecap="round" />
+          <circle cx="19" cy="6.5" r="1.6" fill="currentColor" />
+          <path d="M12 5l1-3 3 .8" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "instagram":
+      return (
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          <circle cx="12" cy="12" r="4.4" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          <circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" />
+        </svg>
+      );
+    case "x":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M4 4l16 16M20 4 4 20" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+        </svg>
+      );
+    case "whatsapp":
+      return (
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            d="M4 20l1.2-3.6A7.4 7.4 0 1 1 8.4 19L4 20Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M9 9.2c.2-.5.4-.5.7-.5h.5c.2 0 .4 0 .6.5l.6 1.4c.1.2 0 .4-.1.5l-.4.5c-.1.2-.2.3 0 .6.3.5.8 1 1.4 1.3.3.2.4.1.6 0l.5-.5c.2-.2.3-.2.5-.1l1.3.7c.3.1.4.3.4.5 0 .6-.5 1.3-1 1.4-.5.1-1 .2-2.4-.4-1.9-.8-3.1-2.6-3.2-2.8-.1-.2-.8-1-.8-2 0-.9.5-1.3.6-1.5Z"
+            fill="currentColor"
+          />
+        </svg>
+      );
+  }
+}
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKDAYS_LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -80,7 +129,7 @@ function fmtDayHeader(d: Date) {
 }
 
 /* ----- day-grid time axis ----- */
-// Columns along the x-axis, one per hour of the posting window.
+// Columns along the x-axis, one per hour across the full posting window (15 hours).
 const SLOT_START = 7; // 07:00
 const SLOT_END = 21; // 21:00 inclusive
 const SLOTS = Array.from({ length: SLOT_END - SLOT_START + 1 }, (_, i) => `${pad(SLOT_START + i)}:00`);
@@ -132,20 +181,23 @@ function buildItems(): Item[] {
 function VideoCard({
   item,
   showTime,
+  compact,
   onDragStart,
   onDragEnd,
   dragging,
 }: {
   item: Item;
   showTime?: boolean;
+  compact?: boolean;
   onDragStart: (id: string) => void;
   onDragEnd: () => void;
   dragging: boolean;
 }) {
   return (
     <article
-      className={`vcard plat-${item.platform} st-${item.status}${dragging ? " is-dragging" : ""}`}
+      className={`vcard plat-${item.platform} st-${item.status}${compact ? " vcard-compact" : ""}${dragging ? " is-dragging" : ""}`}
       draggable
+      title={item.title}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", item.id);
@@ -156,13 +208,16 @@ function VideoCard({
       <div className="vcard-thumb">
         <img src={item.thumb} alt="" loading="lazy" />
         <span className="vcard-play" aria-hidden="true">▶</span>
+        {compact && showTime && item.time ? <span className="vcard-time">{item.time}</span> : null}
       </div>
       <div className="vcard-body">
-        <span className="vcard-meta">
-          <span className="sched-plat-dot" aria-hidden="true" />
-          {showTime && item.time ? `${item.time} · ` : ""}
-          {PLATFORM_LABEL[item.platform]}
-        </span>
+        {!compact && (
+          <span className="vcard-meta">
+            <span className="sched-plat-dot" aria-hidden="true" />
+            {showTime && item.time ? `${item.time} · ` : ""}
+            {PLATFORM_LABEL[item.platform]}
+          </span>
+        )}
         <span className="vcard-title">{item.title}</span>
       </div>
     </article>
@@ -176,8 +231,9 @@ export function Schedule() {
   const [editing, setEditing] = useState(false);
   const [items, setItems] = useState<Item[]>(buildItems);
   const [dragId, setDragId] = useState<string | null>(null);
-  const [overTarget, setOverTarget] = useState<string | null>(null); // slot time or "pending"
-  // editor day — default to today
+  const [overTarget, setOverTarget] = useState<string | null>(null); // "platform|col" or "pending"
+  const [view, setView] = useState<ViewMode>("day");
+  // editor anchor — default to today
   const [anchor, setAnchor] = useState<Date>(() => new Date(new Date().setHours(0, 0, 0, 0)));
 
   const passes = (it: Item) => filter === "all" || it.status === filter;
@@ -226,30 +282,49 @@ export function Schedule() {
 
   /* ----- editor helpers ----- */
   const pending = useMemo(() => items.filter((it) => it.date === null), [items]);
-  const dayItems = useMemo(
-    () => items.filter((it) => it.date && sameDay(it.date, anchor)),
-    [items, anchor],
+
+  // Columns along the x-axis: hours in Day view, weekdays in Week view.
+  const anchorWeek = useMemo(() => {
+    const ws = startOfWeek(anchor);
+    return Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+  }, [anchor]);
+
+  const columns = useMemo(
+    () =>
+      view === "day"
+        ? SLOTS.map((s) => ({ key: s, label: s }))
+        : anchorWeek.map((d, i) => ({ key: d.toISOString(), label: `${DAYS[i]} ${d.getDate()}` })),
+    [view, anchorWeek],
   );
-  const itemsInSlot = (slotIndex: number) =>
-    dayItems
-      .filter((it) => it.time && slotIndexOf(it.time) === slotIndex)
+
+  const itemsInCell = (platform: Platform, colIndex: number) =>
+    items
+      .filter((it) => {
+        if (!it.date || !it.time || it.platform !== platform) return false;
+        return view === "day"
+          ? sameDay(it.date, anchor) && slotIndexOf(it.time) === colIndex
+          : sameDay(it.date, anchorWeek[colIndex]);
+      })
       .sort((a, b) => (a.time as string).localeCompare(b.time as string));
 
   function step(dir: 1 | -1) {
-    setAnchor((a) => addDays(a, dir));
+    setAnchor((a) => addDays(a, view === "day" ? dir : dir * 7));
   }
   function goToday() {
     setAnchor(new Date(new Date().setHours(0, 0, 0, 0)));
   }
 
-  function placeInSlot(slot: string) {
+  function placeInCell(platform: Platform, colIndex: number) {
     if (!dragId) return;
     setItems((list) =>
-      list.map((it) =>
-        it.id === dragId
-          ? { ...it, date: new Date(anchor), time: slot, status: it.status === "posted" ? "posted" : "scheduled" }
-          : it,
-      ),
+      list.map((it) => {
+        if (it.id !== dragId) return it;
+        const status: Status = it.status === "posted" ? "posted" : "scheduled";
+        if (view === "day") {
+          return { ...it, platform, date: new Date(anchor), time: SLOTS[colIndex], status };
+        }
+        return { ...it, platform, date: new Date(anchorWeek[colIndex]), time: it.time ?? "09:00", status };
+      }),
     );
     resetDrag();
   }
@@ -265,7 +340,10 @@ export function Schedule() {
     setOverTarget(null);
   }
 
-  const headerLabel = fmtDayHeader(anchor);
+  const headerLabel =
+    view === "day"
+      ? fmtDayHeader(anchor)
+      : `${fmtDMY(anchorWeek[0])} – ${fmtDMY(anchorWeek[6])}`;
 
   return (
     <AppShell current="schedule">
@@ -310,8 +388,8 @@ export function Schedule() {
                   Edit schedule <span className="arrow">→</span>
                 </button>
               )}
-              <a className="btn btn-accent btn-sm" href="/content">
-                New post in studio <span className="arrow">→</span>
+              <a className="btn btn-accent btn-sm" href="/chat">
+                New post with assistant <span className="arrow">→</span>
               </a>
             </div>
           </div>
@@ -321,10 +399,10 @@ export function Schedule() {
             <section className="sched-editor" aria-label="Edit schedule">
               <div className="sched-nav">
                 <div className="sched-nav-left">
-                  <button className="sched-navbtn" onClick={() => step(-1)} aria-label="Previous day">
+                  <button className="sched-navbtn" onClick={() => step(-1)} aria-label={`Previous ${view}`}>
                     ‹
                   </button>
-                  <button className="sched-navbtn" onClick={() => step(1)} aria-label="Next day">
+                  <button className="sched-navbtn" onClick={() => step(1)} aria-label={`Next ${view}`}>
                     ›
                   </button>
                   <button className="sched-today" onClick={goToday}>
@@ -332,7 +410,23 @@ export function Schedule() {
                   </button>
                   <h2 className="sched-nav-label">{headerLabel}</h2>
                 </div>
-                <span className="sched-hint">Drag a video onto a time slot to schedule it.</span>
+                <div className="sched-nav-right">
+                  <span className="sched-hint">
+                    Drag a video onto an account &amp; {view === "day" ? "time" : "day"}.
+                  </span>
+                  <label className="sched-viewwrap">
+                    <span className="sched-viewlabel">View</span>
+                    <select
+                      className="sched-viewsel"
+                      value={view}
+                      onChange={(e) => setView(e.target.value as ViewMode)}
+                      aria-label="Calendar view"
+                    >
+                      <option value="day">Day</option>
+                      <option value="week">Week</option>
+                    </select>
+                  </label>
+                </div>
               </div>
 
               <div className="sched-planner">
@@ -372,41 +466,66 @@ export function Schedule() {
                   </div>
                 </aside>
 
-                {/* ----- day grid (right), x-axis = time ----- */}
-                <div className="sched-daygrid-wrap">
-                  <div className="sched-daygrid" role="grid" aria-label={`Schedule for ${headerLabel}`}>
-                    {SLOTS.map((slot, i) => {
-                      const slotItems = itemsInSlot(i);
-                      return (
-                        <div
-                          key={slot}
-                          className={`sched-slot${overTarget === slot ? " is-over" : ""}`}
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            setOverTarget(slot);
-                          }}
-                          onDragLeave={() => setOverTarget((t) => (t === slot ? null : t))}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            placeInSlot(slot);
-                          }}
-                        >
-                          <div className="sched-slot-head">{slot}</div>
-                          <div className="sched-slot-body">
-                            {slotItems.map((it) => (
-                              <VideoCard
-                                key={it.id}
-                                item={it}
-                                showTime
-                                onDragStart={setDragId}
-                                onDragEnd={resetDrag}
-                                dragging={dragId === it.id}
-                              />
-                            ))}
-                          </div>
+                {/* ----- matrix (right): y-axis = accounts, x-axis = time / days ----- */}
+                <div className="sched-matrix-wrap">
+                  <div
+                    className="sched-matrix"
+                    style={{ ["--cols" as string]: columns.length }}
+                    role="grid"
+                    aria-label={`Schedule for ${headerLabel}`}
+                  >
+                    {/* header row */}
+                    <div className="sched-matrix-corner">
+                      <span className="sched-axis-y">Account</span>
+                      <span className="sched-axis-x">{view === "day" ? "Time →" : "Day →"}</span>
+                    </div>
+                    {columns.map((c) => (
+                      <div className="sched-colhead2" key={c.key}>
+                        {c.label}
+                      </div>
+                    ))}
+
+                    {/* one row per account */}
+                    {PLATFORMS.map((p) => (
+                      <Fragment key={p}>
+                        <div className="sched-rowhead2" title={PLATFORM_LABEL[p]}>
+                          <span className={`sched-plat-icon plat-${p}`} aria-label={PLATFORM_LABEL[p]} role="img">
+                            <PlatformIcon platform={p} />
+                          </span>
                         </div>
-                      );
-                    })}
+                        {columns.map((c, ci) => {
+                          const cellItems = itemsInCell(p, ci);
+                          const tkey = `${p}|${ci}`;
+                          return (
+                            <div
+                              key={c.key}
+                              className={`sched-cell2${overTarget === tkey ? " is-over" : ""}`}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                setOverTarget(tkey);
+                              }}
+                              onDragLeave={() => setOverTarget((t) => (t === tkey ? null : t))}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                placeInCell(p, ci);
+                              }}
+                            >
+                              {cellItems.map((it) => (
+                                <VideoCard
+                                  key={it.id}
+                                  item={it}
+                                  compact
+                                  showTime
+                                  onDragStart={setDragId}
+                                  onDragEnd={resetDrag}
+                                  dragging={dragId === it.id}
+                                />
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </Fragment>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -491,7 +610,7 @@ export function Schedule() {
             </div>
             <div className="footer-right">
               <a href="/dashboard">Dashboard</a>
-              <a href="/content">Studio</a>
+              <a href="/chat">Assistant</a>
             </div>
           </div>
         </footer>
