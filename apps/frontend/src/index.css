@@ -1,24 +1,34 @@
 :root {
-  /* color — OKLCH, light editorial "white-paper" (background-agents.com match) */
-  --bg: oklch(0.945 0.003 70);
-  --panel: oklch(0.985 0.002 70);
-  --panel-alt: oklch(0.925 0.003 70);
-  --ink: oklch(0.23 0.008 50);
-  --muted: oklch(0.5 0.008 50);
-  --accent: oklch(0.52 0.2 22);
-  --accent-ink: oklch(0.45 0.2 22);
-  --black: oklch(0.18 0.006 50);
-  --border: oklch(0.85 0.004 70);
-  --grid-dot: oklch(0.8 0.003 70);
+  /* color — copied directly from background-agents.com ("gartner" theme tokens) */
+  --bg: #fafafa;
+  --bg-outer: #e8e8e8;
+  --panel: #ffffff;
+  --panel-alt: #f0f0f0;
+  --ink: #1a1a1a;
+  --muted: #666666;
+  --muted-light: #888888;
+  --accent: #c41e3a;
+  --accent-ink: #a01830;
+  --accent-light: rgba(196, 30, 58, 0.1);
+  --black: #1a1a1a;
+  --border: #e0e0e0;
+  --border-light: #e8e8e8;
+  --grid-dot: #d8d8d8;
+  /* phase colors for the pipeline dots (gartner theme) */
+  --phase1: #c41e3a;
+  --phase2: #8b4513;
+  --phase3: #2e5a1c;
+  --phase4: #1a4a6e;
 
-  /* type */
-  --font-serif: "Spectral", Georgia, "Times New Roman", serif;
-  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* type — Playfair Display (heading) / Source Serif (body) / Inter (labels) */
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: "Source Serif 4", "Source Serif Pro", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* scale */
   --maxw: 1080px;
   --measure: 720px;
-  --radius: 4px;
+  --radius: 2px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --z-bar: 100;
 
@@ -39,7 +49,8 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-serif);
+  font-family: var(--font-body);
+  font-size: 18px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -298,7 +309,7 @@ p {
 }
 
 .hero .lead {
-  font-family: var(--font-serif);
+  font-family: var(--font-body);
   color: var(--ink);
   font-size: clamp(1.02rem, 1.5vw, 1.2rem);
   line-height: 1.6;
@@ -343,6 +354,8 @@ p {
   width: 100%;
   height: auto;
   display: block;
+  cursor: crosshair;
+  touch-action: pan-y;
 }
 
 .pipeline-caption {

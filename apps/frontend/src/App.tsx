@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Pipeline } from "./Pipeline";
 
 /**
  * Where "Go to Demo" points — the live hackathon project.
@@ -25,88 +26,6 @@ function Logo() {
       <circle cx="32" cy="32" r="12" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.6" />
       <circle cx="32" cy="32" r="5" fill="var(--accent)" />
     </svg>
-  );
-}
-
-const STAGES = ["Describe", "Research", "Write", "Post", "Improve"];
-
-/** The signature "pinch" pipeline diagram, adapted to Signal's loop. */
-function Pipeline() {
-  const W = 1080;
-  const H = 200;
-  const mid = H / 2;
-  const pinchX = W * 0.5;
-  // two mirrored curves that pinch toward the center (the "Write/Post" handoff)
-  const top = `M0,${mid - 60} C${W * 0.32},${mid - 60} ${pinchX - 80},${mid - 6} ${pinchX},${mid - 6} C${pinchX + 80},${mid - 6} ${W * 0.68},${mid - 60} ${W},${mid - 60}`;
-  const bot = `M0,${mid + 60} C${W * 0.32},${mid + 60} ${pinchX - 80},${mid + 6} ${pinchX},${mid + 6} C${pinchX + 80},${mid + 6} ${W * 0.68},${mid + 60} ${W},${mid + 60}`;
-
-  // scattered dots representing posts/activity across the loop
-  const dots = [
-    [80, 78, "g"], [150, 118, "b"], [230, 70, "r"], [300, 130, "g"],
-    [360, 96, "n"], [430, 124, "g"], [470, 80, "r"], [505, 104, "b"],
-    [590, 96, "n"], [650, 78, "r"], [690, 120, "g"], [740, 100, "b"],
-    [820, 84, "r"], [880, 118, "n"], [930, 78, "g"], [980, 110, "b"], [1030, 96, "r"],
-  ] as const;
-  const dotColor: Record<string, string> = {
-    g: "oklch(0.55 0.12 150)",
-    b: "oklch(0.55 0.1 250)",
-    r: "var(--accent)",
-    n: "oklch(0.4 0.02 60)",
-  };
-
-  return (
-    <div className="pipeline">
-      <div className="wrap">
-        <div className="pipeline-ticks">
-          {STAGES.map((s, i) => (
-            <span key={s} className={i === 2 || i === 3 ? "active" : undefined}>
-              {s}
-            </span>
-          ))}
-        </div>
-        <svg
-          className="pipeline-svg"
-          viewBox={`0 0 ${W} ${H}`}
-          preserveAspectRatio="none"
-          role="img"
-          aria-label="Signal's continuous loop: describe, research, write, post, improve"
-        >
-          {STAGES.map((_, i) => {
-            const x = (W / (STAGES.length - 1)) * i;
-            return (
-              <line
-                key={i}
-                x1={x}
-                y1={mid - 74}
-                x2={x}
-                y2={mid - 60}
-                stroke="var(--border)"
-                strokeWidth={1}
-                strokeDasharray="3 3"
-              />
-            );
-          })}
-          <path d={top} fill="none" stroke="var(--border)" strokeWidth={1.4} />
-          <path d={bot} fill="none" stroke="var(--border)" strokeWidth={1.4} />
-          <line
-            x1={pinchX}
-            y1={mid - 70}
-            x2={pinchX}
-            y2={mid + 70}
-            stroke="var(--accent)"
-            strokeWidth={1}
-            strokeDasharray="4 4"
-            opacity={0.7}
-          />
-          {dots.map(([x, y, c], i) => (
-            <circle key={i} cx={x} cy={y} r={4} fill={dotColor[c]} />
-          ))}
-        </svg>
-        <p className="pipeline-caption">
-          One loop, always running. The handoff in the middle is where a draft becomes a live post.
-        </p>
-      </div>
-    </div>
   );
 }
 

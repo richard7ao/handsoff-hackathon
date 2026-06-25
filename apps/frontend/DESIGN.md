@@ -10,33 +10,31 @@ Light "white-paper" editorial. A warm near-neutral light-gray field with a faint
 grid, refined serif headlines, and a single crimson accent. Calm, academic, considered —
 the page reads like a research note about a system that runs itself.
 
-## Color (OKLCH)
+## Color (exact tokens, copied from background-agents.com "gartner" theme)
 
-| Role        | Value                     | Use |
-|-------------|---------------------------|-----|
-| bg          | `oklch(0.945 0.003 70)`   | Page background (warm light gray, NOT cream — chroma kept ≤0.004) |
-| panel       | `oklch(0.985 0.002 70)`   | Cards, white callout panels |
-| panel-alt   | `oklch(0.925 0.003 70)`   | Alternating gray section bands |
-| ink         | `oklch(0.23 0.008 50)`    | Headings + body (≥11:1 on bg) |
-| muted       | `oklch(0.50 0.008 50)`    | Subtitles, secondary text (≥4.5:1) |
-| accent      | `oklch(0.52 0.20 22)`     | Crimson — micro-labels, active nav, dots, primary CTA |
-| accent-ink  | `oklch(0.45 0.20 22)`     | Crimson hover/darker |
-| black       | `oklch(0.18 0.006 50)`    | Black pill CTA, strong marks |
-| border      | `oklch(0.85 0.004 70)`    | Hairlines, card borders |
-| grid-dot    | `oklch(0.80 0.003 70)`    | Dotted background pattern |
+| Role        | Value     | Use |
+|-------------|-----------|-----|
+| bg          | `#FAFAFA` | Page background |
+| panel       | `#FFFFFF` | Cards, white callout panels |
+| panel-alt   | `#F0F0F0` | Alternating gray section bands |
+| ink         | `#1A1A1A` | Headings + body |
+| muted       | `#666666` | Subtitles, secondary text |
+| accent      | `#C41E3A` | Crimson — micro-labels, active nav, dots, primary CTA |
+| accent-ink  | `#A01830` | Crimson hover/darker |
+| border      | `#E0E0E0` | Hairlines, card borders |
+| grid-dot    | `#D8D8D8` | Dotted hero background |
+| phase1–4    | `#C41E3A` / `#8B4513` / `#2E5A1C` / `#1A4A6E` | Pipeline dot colors |
 
 Strategy: **Restrained editorial** — neutral light field, crimson ≤10%, black for the
-secondary CTA. White text on crimson/black fills.
+secondary CTA. White text on crimson/black fills. Border-radius **2px** (sharp, per source).
 
-## Typography
+## Typography (exact, copied from source)
 
-- **Display + body:** **Spectral** (Google) — a screen-first transitional serif with real
-  contrast. Bold for headings, regular/italic for leads and prose. NOT on the reflex-reject
-  serif list. This carries the editorial voice.
-- **Micro-labels / nav / pipeline ticks / tags:** **Geist** sans, uppercase, ~0.78rem,
-  letter-spacing 0.08em. Crimson for kickers, muted gray for metadata.
+- **Headings:** **Playfair Display** (Georgia fallback) — high-contrast display serif.
+- **Body / leads / prose:** **Source Serif 4** (Source Serif Pro), 18px base.
+- **Micro-labels / nav / pipeline labels / tags:** **Inter**, uppercase, letter-spacing 0.09em.
+  Crimson for kickers, muted gray for metadata.
 - Headings get a **crimson left-rule** (3px vertical bar) on key blocks, per the reference.
-- Display clamp ceiling ~5rem; letter-spacing -0.02em (serif, looser than the grotesque floor).
 - `text-wrap: balance` on headings; `pretty` on prose. Body ≤72ch.
 
 ## Signature elements (from the reference)
