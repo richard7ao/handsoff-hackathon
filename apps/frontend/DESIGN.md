@@ -40,7 +40,7 @@ secondary CTA. White text on crimson/black fills. Border-radius **2px** (sharp, 
 ## Signature elements (from the reference)
 
 1. **Dotted-grid background** behind the hero (radial-dot pattern, faint).
-2. **The SDLC "pinch" diagram** → Signal pipeline: `DESCRIBE · RESEARCH · WRITE · POST · IMPROVE`
+2. **The SDLC "pinch" diagram** → Buzz pipeline: `DESCRIBE · RESEARCH · WRITE · POST · IMPROVE`
    as labelled ticks over a horizontal pinch curve with scattered colored dots; active stage
    in crimson. Custom inline SVG.
 3. **Hairline white cards**, ~4px radius, small crimson uppercase label → serif title →
@@ -51,7 +51,7 @@ secondary CTA. White text on crimson/black fills. Border-radius **2px** (sharp, 
 ## Motion
 
 - Restrained, like the reference. Quiet fade-up on the hero only; no per-section reveal reflex.
-- A single small crimson **live dot** (slow pulse) for the "running" signal. Respects
+- A single small crimson **live dot** (slow pulse) for the "running" buzz. Respects
   `prefers-reduced-motion`.
 
 ## Layout

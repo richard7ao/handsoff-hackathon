@@ -287,7 +287,7 @@ We're flexible on format and creative direction, and we'd love to hear how you l
 Looking forward to hopefully working together.
 
 Warm regards,
-The Signal Team`;
+The Buzz Team`;
 }
 
 function EmailOverlay({
@@ -558,7 +558,7 @@ export function Marketplace() {
         <div className="wrap footer-inner">
           <div className="footer-left">
             <Logo />
-            <span>© {new Date().getFullYear()} Signal</span>
+            <span>© {new Date().getFullYear()} Buzz</span>
           </div>
           <div className="footer-right">
             <a href="/dashboard">Dashboard</a>

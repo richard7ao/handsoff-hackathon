@@ -1,6 +1,6 @@
-# Signal — handsoff-hackathon
+# Buzz — handsoff-hackathon
 
-A physical business describes itself in a 5-minute conversation. **Signal** researches their market, finds where their customers talk online, writes content in their voice, posts it, and self-improves based on real engagement. Zero human input after intake.
+A physical business describes itself in a 5-minute conversation. **Buzz** researches their market, finds where their customers talk online, writes content in their voice, posts it, and self-improves based on real engagement. Zero human input after intake.
 
 Three agents:
 
@@ -49,7 +49,7 @@ The toolbar and footer "Go to Demo" buttons point at `DEMO_URL` in
 
 Built with [Impeccable](https://impeccable.style/). Brand/visual context lives in
 `apps/frontend/PRODUCT.md` and `apps/frontend/DESIGN.md`. Dark "control-room" theme,
-environmental green signal, Geist + Geist Mono.
+environmental green buzz, Geist + Geist Mono.
 
 ## API endpoints
 

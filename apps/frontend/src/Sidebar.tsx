@@ -143,7 +143,7 @@ export function Sidebar({
               <circle cx="32" cy="32" r="5" fill="var(--d-accent)" />
             </svg>
           </span>
-          <span className="rail-label">Signal</span>
+          <span className="rail-label">Buzz</span>
         </span>
         <button
           type="button"

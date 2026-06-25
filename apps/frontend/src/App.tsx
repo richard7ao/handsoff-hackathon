@@ -112,7 +112,7 @@ export function App() {
         <div className="wrap topbar-inner">
           <a className="brand" href="#top">
             <Logo />
-            Signal
+            Buzz
           </a>
           <nav className="topbar-nav">
             <div className="topbar-links">
@@ -141,7 +141,7 @@ export function App() {
             </p>
             <p className="lead">
               A physical business describes itself in a <strong>5-minute conversation</strong>.
-              Signal researches their market, finds where their customers talk online, writes
+              Buzz researches their market, finds where their customers talk online, writes
               content in their voice, posts it — and <strong>self-improves</strong> based on real
               engagement.
             </p>
@@ -254,7 +254,7 @@ export function App() {
         <section className="cta">
           <div className="wrap">
             <span className="eyebrow label label-accent">See it run</span>
-            <h2 style={{ marginTop: 14 }}>See Signal run, unattended.</h2>
+            <h2 style={{ marginTop: 14 }}>See Buzz run, unattended.</h2>
             <p>
               Watch Jack, Scout, and Pulse take a business from a 5-minute chat to a live,
               self-improving post — no human at the keyboard.
@@ -276,7 +276,7 @@ export function App() {
         <div className="wrap footer-inner">
           <div className="footer-left">
             <Logo />
-            <span>© {new Date().getFullYear()} Signal</span>
+            <span>© {new Date().getFullYear()} Buzz</span>
             <span className="api-status">
               {health ? (
                 <>

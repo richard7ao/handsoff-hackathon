@@ -10,7 +10,7 @@ Owners of physical, local businesses — barbershops, cafés, gyms, dental clini
 
 ## Product Purpose
 
-Signal turns a 5-minute conversation into a fully autonomous marketing team. A business describes itself once; Signal researches their market, finds where their customers actually talk online, writes content in their voice, posts it, and self-improves based on real engagement. Zero human input after intake. Success looks like a business owner who never logs in again still getting found by new customers.
+Buzz turns a 5-minute conversation into a fully autonomous marketing team. A business describes itself once; Buzz researches their market, finds where their customers actually talk online, writes content in their voice, posts it, and self-improves based on real engagement. Zero human input after intake. Success looks like a business owner who never logs in again still getting found by new customers.
 
 Three agents do the work:
 - **Jack** — the intake conversation. Five questions over WhatsApp or a web form, output as a structured business brief.

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 /**
  * Hourglass "cinch" animation — ported directly from background-agents.com's
  * HourglassCinch component (constants, easing, state machine and dot physics
- * preserved). Adapted to Signal's loop: Describe → Research → Write → Post → Improve.
+ * preserved). Adapted to Buzz's loop: Describe → Research → Write → Post → Improve.
  *
  * Dots flow left→right continuously. On a timer (or while hovered) the stream
  * "cinches" toward the centre stage — the curves pinch in and nearby dots are
@@ -192,7 +192,7 @@ export function Pipeline() {
           className="pipeline-svg"
           viewBox={`0 0 ${W} ${H}`}
           role="img"
-          aria-label="Signal's continuous loop: describe, research, write, post, improve"
+          aria-label="Buzz's continuous loop: describe, research, write, post, improve"
           onPointerMove={onMove}
           onPointerLeave={onLeave}
         >

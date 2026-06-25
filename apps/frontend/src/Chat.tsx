@@ -45,7 +45,7 @@ const SEEDS: Seed[] = [
   { icon: "◎", label: "Find my audience", prompt: "Where do my customers talk online? Find the best subreddits for a local coffee shop." },
   { icon: "↻", label: "Improve a post", prompt: "My last post got 2 upvotes. How would you rewrite it to do better?" },
   { icon: "▤", label: "Build my brief", prompt: "Help me build a business brief — ask me the 5 intake questions." },
-  { icon: "✦", label: "Signal's choice", prompt: "Surprise me — show me what Signal would do for a new gym this week." },
+  { icon: "✦", label: "Buzz's choice", prompt: "Surprise me — show me what Buzz would do for a new gym this week." },
 ];
 
 /* ---------------- mock assistant ---------------- */
@@ -286,14 +286,14 @@ export function Chat() {
             <div className="chat-thread">
               {messages.map((m, i) => (
                 <div className={`chat-msg ${m.role}`} key={i}>
-                  <span className="chat-role">{m.role === "user" ? "You" : "Signal"}</span>
+                  <span className="chat-role">{m.role === "user" ? "You" : "Buzz"}</span>
                   <p>{m.text}</p>
                 </div>
               ))}
               {thinking && (
                 <div className="chat-msg assistant">
-                  <span className="chat-role">Signal</span>
-                  <div className="chat-typing" aria-label="Signal is typing">
+                  <span className="chat-role">Buzz</span>
+                  <div className="chat-typing" aria-label="Buzz is typing">
                     <span />
                     <span />
                     <span />
@@ -325,7 +325,7 @@ export function Chat() {
               </button>
               <div className="chat-box-right">
                 <span className="chat-model">
-                  Signal 1.0 <span className="chat-model-dim">Auto</span>
+                  Buzz 1.0 <span className="chat-model-dim">Auto</span>
                 </span>
                 <button
                   className={`chat-icon ${listening ? "is-on" : ""}`}

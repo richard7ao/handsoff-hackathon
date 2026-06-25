@@ -143,22 +143,22 @@ const slotIndexOf = (time: string) => {
 const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/320/200`;
 
 const POSTS: Post[] = [
-  { id: "p1", day: 0, time: "08:30", platform: "reddit", channel: "r/Austin", title: "12 years running a barbershop in Austin taught me one thing about regulars", status: "posted", thumb: thumb("signal-barber-1") },
-  { id: "p2", day: 0, time: "17:00", platform: "instagram", channel: "Reel", title: "Behind the chair: the Monday rush, in 20 seconds", status: "posted", thumb: thumb("signal-reel-2") },
-  { id: "p3", day: 1, time: "12:15", platform: "x", channel: "Post", title: "Unpopular opinion from a barbershop owner about walk-ins", status: "scheduled", thumb: thumb("signal-x-3") },
-  { id: "p4", day: 2, time: "09:00", platform: "reddit", channel: "r/smallbusiness", title: "A few honest things Austin folks ask us about barbershops", status: "scheduled", thumb: thumb("signal-barber-4") },
-  { id: "p5", day: 2, time: "18:30", platform: "whatsapp", channel: "Broadcast", title: "This week's quiet hours for our regulars", status: "scheduled", thumb: thumb("signal-wa-5") },
-  { id: "p6", day: 3, time: "10:00", platform: "instagram", channel: "Caption", title: "No gimmicks — just the work, done right, here in Austin", status: "scheduled", thumb: thumb("signal-ig-6") },
-  { id: "p7", day: 4, time: "16:45", platform: "x", channel: "Post", title: "Friday chair openings — first come, first served", status: "draft", thumb: thumb("signal-x-7") },
-  { id: "p8", day: 5, time: "11:30", platform: "reddit", channel: "r/Austin", title: "Saturday walk-ins: what to expect and when to come in", status: "scheduled", thumb: thumb("signal-barber-8") },
-  { id: "p9", day: 6, time: "19:00", platform: "instagram", channel: "Story", title: "Sunday wrap — the week at Bella's", status: "draft", thumb: thumb("signal-ig-9") },
+  { id: "p1", day: 0, time: "08:30", platform: "reddit", channel: "r/Austin", title: "12 years running a barbershop in Austin taught me one thing about regulars", status: "posted", thumb: thumb("buzz-barber-1") },
+  { id: "p2", day: 0, time: "17:00", platform: "instagram", channel: "Reel", title: "Behind the chair: the Monday rush, in 20 seconds", status: "posted", thumb: thumb("buzz-reel-2") },
+  { id: "p3", day: 1, time: "12:15", platform: "x", channel: "Post", title: "Unpopular opinion from a barbershop owner about walk-ins", status: "scheduled", thumb: thumb("buzz-x-3") },
+  { id: "p4", day: 2, time: "09:00", platform: "reddit", channel: "r/smallbusiness", title: "A few honest things Austin folks ask us about barbershops", status: "scheduled", thumb: thumb("buzz-barber-4") },
+  { id: "p5", day: 2, time: "18:30", platform: "whatsapp", channel: "Broadcast", title: "This week's quiet hours for our regulars", status: "scheduled", thumb: thumb("buzz-wa-5") },
+  { id: "p6", day: 3, time: "10:00", platform: "instagram", channel: "Caption", title: "No gimmicks — just the work, done right, here in Austin", status: "scheduled", thumb: thumb("buzz-ig-6") },
+  { id: "p7", day: 4, time: "16:45", platform: "x", channel: "Post", title: "Friday chair openings — first come, first served", status: "draft", thumb: thumb("buzz-x-7") },
+  { id: "p8", day: 5, time: "11:30", platform: "reddit", channel: "r/Austin", title: "Saturday walk-ins: what to expect and when to come in", status: "scheduled", thumb: thumb("buzz-barber-8") },
+  { id: "p9", day: 6, time: "19:00", platform: "instagram", channel: "Story", title: "Sunday wrap — the week at Bella's", status: "draft", thumb: thumb("buzz-ig-9") },
 ];
 
 // Videos waiting to be placed — they start life in the pending tray.
 const PENDING: Item[] = [
-  { id: "q1", date: null, time: null, platform: "instagram", channel: "Reel", title: "Fresh fade, slow motion — the Tuesday walk-in", status: "draft", thumb: thumb("signal-pending-1") },
-  { id: "q2", date: null, time: null, platform: "x", channel: "Post", title: "Three things every Austin barber wishes you knew", status: "draft", thumb: thumb("signal-pending-2") },
-  { id: "q3", date: null, time: null, platform: "reddit", channel: "r/Austin", title: "We tried staying open late on Thursdays. Here's what happened.", status: "draft", thumb: thumb("signal-pending-3") },
+  { id: "q1", date: null, time: null, platform: "instagram", channel: "Reel", title: "Fresh fade, slow motion — the Tuesday walk-in", status: "draft", thumb: thumb("buzz-pending-1") },
+  { id: "q2", date: null, time: null, platform: "x", channel: "Post", title: "Three things every Austin barber wishes you knew", status: "draft", thumb: thumb("buzz-pending-2") },
+  { id: "q3", date: null, time: null, platform: "reddit", channel: "r/Austin", title: "We tried staying open late on Thursdays. Here's what happened.", status: "draft", thumb: thumb("buzz-pending-3") },
 ];
 
 function buildItems(): Item[] {
@@ -606,7 +606,7 @@ export function Schedule() {
           <div className="wrap footer-inner">
             <div className="footer-left">
               <Logo />
-              <span>© {new Date().getFullYear()} Signal</span>
+              <span>© {new Date().getFullYear()} Buzz</span>
             </div>
             <div className="footer-right">
               <a href="/dashboard">Dashboard</a>
