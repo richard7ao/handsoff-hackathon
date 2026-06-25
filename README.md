@@ -1,12 +1,20 @@
-# handsoff-hackathon
+# Signal — handsoff-hackathon
 
-Mock pnpm monorepo with a **Vite + React** frontend and a **Fastify** backend, ready to deploy on Vercel.
+A physical business describes itself in a 5-minute conversation. **Signal** researches their market, finds where their customers talk online, writes content in their voice, posts it, and self-improves based on real engagement. Zero human input after intake.
+
+Three agents:
+
+- **Jack** — intake conversation (WhatsApp / Vercel form → structured brief in Supabase)
+- **Scout** — long-running research + content (Hermes + Modal, runs 30–45 min unattended)
+- **Pulse** — posting + self-improvement (Hermes cron, monitors engagement every 10 min, rewrites when upvotes are low)
+
+This repo is the **marketing landing page** (frontend team), built as a pnpm monorepo and deployed on Vercel.
 
 ```
 handsoff-hackathon/
 ├── apps/
-│   ├── web/        # Vite + React landing page  (@handsoff/web)
-│   └── api/        # Fastify serverless API     (@handsoff/api)
+│   ├── frontend/   # Vite + React landing page  (@handsoff/frontend)
+│   └── backend/    # Fastify serverless API      (@handsoff/backend)
 ├── package.json
 ├── pnpm-workspace.yaml
 └── tsconfig.base.json
@@ -19,8 +27,6 @@ handsoff-hackathon/
 
 ## Local development
 
-Install deps from the repo root:
-
 ```bash
 pnpm install
 ```
@@ -28,47 +34,57 @@ pnpm install
 Run both apps in separate terminals:
 
 ```bash
-pnpm dev:api   # Fastify on http://localhost:3000
-pnpm dev:web   # Vite    on http://localhost:5173 (proxies /api -> :3000)
+pnpm dev:backend    # Fastify on http://localhost:3000
+pnpm dev:frontend   # Vite    on http://localhost:5173 (proxies /api -> :3000)
 ```
 
-Open http://localhost:5173 — the landing page calls `/api/health` to show a live status badge.
+Open http://localhost:5173.
+
+## "Go to Demo" link
+
+The toolbar and footer "Go to Demo" buttons point at `DEMO_URL` in
+`apps/frontend/src/App.tsx`. Update that constant to your live hackathon demo URL.
+
+## Design system
+
+Built with [Impeccable](https://impeccable.style/). Brand/visual context lives in
+`apps/frontend/PRODUCT.md` and `apps/frontend/DESIGN.md`. Dark "control-room" theme,
+environmental green signal, Geist + Geist Mono.
 
 ## API endpoints
 
-| Method | Path           | Description                          |
-|--------|----------------|--------------------------------------|
-| GET    | `/api/health`  | Liveness check (`{ status, timestamp, service }`) |
-| GET    | `/api/content` | Landing page content                 |
-| GET    | `/`            | Service info + endpoint list         |
+| Method | Path           | Description                       |
+|--------|----------------|-----------------------------------|
+| GET    | `/api/health`  | Liveness (`{ status, timestamp, service }`) — powers the footer status |
+| GET    | `/api/content` | Landing copy payload              |
+| GET    | `/`            | Service info + endpoint list      |
 
 ## Deploy on Vercel
 
-This monorepo deploys as **two separate Vercel projects** (one per app). Import the repo at https://vercel.com/new twice:
+Two separate Vercel projects (import the repo twice at https://vercel.com/new):
 
-### 1. API project (`apps/api`)
+### 1. Frontend (`apps/frontend`)
 
-- **Root Directory:** `apps/api`
-- **Framework Preset:** Other
-- **Build Command:** `pnpm install --frozen-lockfile` (already in `apps/api/vercel.json`)
-- Vercel auto-detects the `api/index.ts` serverless function. `vercel.json` rewrites `/api/*` and `/` to it.
-
-### 2. Web project (`apps/web`)
-
-- **Root Directory:** `apps/web`
+- **Root Directory:** `apps/frontend`
 - **Framework Preset:** Vite
 - **Build Command:** `pnpm install --frozen-lockfile && pnpm build`
 - **Output Directory:** `dist`
-- **Environment Variable:** set `API_URL` to your deployed API project's URL (e.g. `https://handsoff-api.vercel.app`). The `apps/web/vercel.json` rewrite proxies `/api/:path*` to `${API_URL}/api/:path*`, so the frontend stays same-origin.
+- **Env var (optional):** set `API_URL` to the deployed backend URL; `apps/frontend/vercel.json` rewrites `/api/*` to it so the page stays same-origin.
 
-> Tip: if you prefer a single project, you can merge `apps/api/api/*` into `apps/web/api/*` and deploy `apps/web` alone — Vercel will serve the SPA and the serverless functions from one URL.
+### 2. Backend (`apps/backend`)
+
+- **Root Directory:** `apps/backend`
+- **Framework Preset:** Other
+- Vercel auto-detects `api/index.ts` as a serverless function; `vercel.json` rewrites `/api/*` and `/` to it.
+
+> Quick path: run `vercel --prod` from `apps/frontend` to get a live URL immediately.
 
 ## Scripts
 
-| Command           | Description                          |
-|-------------------|--------------------------------------|
-| `pnpm dev:web`    | Start Vite dev server                |
-| `pnpm dev:api`    | Start Fastify dev server             |
-| `pnpm build`      | Typecheck + build both apps          |
-| `pnpm build:web`  | Build the frontend                   |
-| `pnpm build:api`  | Typecheck the API                    |
+| Command             | Description                  |
+|---------------------|------------------------------|
+| `pnpm dev:frontend` | Start Vite dev server        |
+| `pnpm dev:backend`  | Start Fastify dev server     |
+| `pnpm build`        | Typecheck + build both apps  |
+| `pnpm build:frontend` | Build the frontend         |
+| `pnpm build:backend`  | Typecheck the API          |

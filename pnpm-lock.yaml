@@ -8,7 +8,7 @@ importers:
 
   .: {}
 
-  apps/api:
+  apps/backend:
     dependencies:
       fastify:
         specifier: ^5.2.1
@@ -24,7 +24,7 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
-  apps/web:
+  apps/frontend:
     dependencies:
       react:
         specifier: ^18.3.1

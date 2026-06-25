@@ -1,126 +1,369 @@
 import { useEffect, useState } from "react";
 
-type Content = {
-  title: string;
-  tagline: string;
-  features: { icon: string; title: string; body: string }[];
-};
+/**
+ * Where "Go to Demo" points — the live hackathon project.
+ * Update this once the demo is deployed (e.g. https://signal-demo.vercel.app).
+ */
+const DEMO_URL = "https://handsoff-hackathon.vercel.app";
 
 type Health = { status: string; timestamp: number; service: string };
-
-const FALLBACK: Content = {
-  title: "Handsoff Hackathon",
-  tagline: "Ship faster with autonomous agents.",
-  features: [
-    { icon: "▲", title: "Vite + React", body: "Lightning-fast frontend in apps/web." },
-    { icon: "⚡", title: "Fastify API", body: "Serverless backend in apps/api." },
-    { icon: "🧩", title: "pnpm monorepo", body: "Workspaces wired up and Vercel-ready." },
-  ],
-};
-
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`);
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  return (await res.json()) as T;
+function Live() {
+  return (
+    <span className="live" aria-hidden="true">
+      <span className="ring" />
+      <span className="core" />
+    </span>
+  );
 }
 
+function Logo() {
+  return (
+    <svg className="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="21" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.35" />
+      <circle cx="32" cy="32" r="12" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.6" />
+      <circle cx="32" cy="32" r="5" fill="var(--accent)" />
+    </svg>
+  );
+}
+
+const STAGES = ["Describe", "Research", "Write", "Post", "Improve"];
+
+/** The signature "pinch" pipeline diagram, adapted to Signal's loop. */
+function Pipeline() {
+  const W = 1080;
+  const H = 200;
+  const mid = H / 2;
+  const pinchX = W * 0.5;
+  // two mirrored curves that pinch toward the center (the "Write/Post" handoff)
+  const top = `M0,${mid - 60} C${W * 0.32},${mid - 60} ${pinchX - 80},${mid - 6} ${pinchX},${mid - 6} C${pinchX + 80},${mid - 6} ${W * 0.68},${mid - 60} ${W},${mid - 60}`;
+  const bot = `M0,${mid + 60} C${W * 0.32},${mid + 60} ${pinchX - 80},${mid + 6} ${pinchX},${mid + 6} C${pinchX + 80},${mid + 6} ${W * 0.68},${mid + 60} ${W},${mid + 60}`;
+
+  // scattered dots representing posts/activity across the loop
+  const dots = [
+    [80, 78, "g"], [150, 118, "b"], [230, 70, "r"], [300, 130, "g"],
+    [360, 96, "n"], [430, 124, "g"], [470, 80, "r"], [505, 104, "b"],
+    [590, 96, "n"], [650, 78, "r"], [690, 120, "g"], [740, 100, "b"],
+    [820, 84, "r"], [880, 118, "n"], [930, 78, "g"], [980, 110, "b"], [1030, 96, "r"],
+  ] as const;
+  const dotColor: Record<string, string> = {
+    g: "oklch(0.55 0.12 150)",
+    b: "oklch(0.55 0.1 250)",
+    r: "var(--accent)",
+    n: "oklch(0.4 0.02 60)",
+  };
+
+  return (
+    <div className="pipeline">
+      <div className="wrap">
+        <div className="pipeline-ticks">
+          {STAGES.map((s, i) => (
+            <span key={s} className={i === 2 || i === 3 ? "active" : undefined}>
+              {s}
+            </span>
+          ))}
+        </div>
+        <svg
+          className="pipeline-svg"
+          viewBox={`0 0 ${W} ${H}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Signal's continuous loop: describe, research, write, post, improve"
+        >
+          {STAGES.map((_, i) => {
+            const x = (W / (STAGES.length - 1)) * i;
+            return (
+              <line
+                key={i}
+                x1={x}
+                y1={mid - 74}
+                x2={x}
+                y2={mid - 60}
+                stroke="var(--border)"
+                strokeWidth={1}
+                strokeDasharray="3 3"
+              />
+            );
+          })}
+          <path d={top} fill="none" stroke="var(--border)" strokeWidth={1.4} />
+          <path d={bot} fill="none" stroke="var(--border)" strokeWidth={1.4} />
+          <line
+            x1={pinchX}
+            y1={mid - 70}
+            x2={pinchX}
+            y2={mid + 70}
+            stroke="var(--accent)"
+            strokeWidth={1}
+            strokeDasharray="4 4"
+            opacity={0.7}
+          />
+          {dots.map(([x, y, c], i) => (
+            <circle key={i} cx={x} cy={y} r={4} fill={dotColor[c]} />
+          ))}
+        </svg>
+        <p className="pipeline-caption">
+          One loop, always running. The handoff in the middle is where a draft becomes a live post.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const PROBLEMS = [
+  {
+    n: "01",
+    title: "They are the bottleneck",
+    body: "Marketing waits on the one person already running the counter all day. Nothing ships because no one has the time.",
+  },
+  {
+    n: "02",
+    title: "They don't know where to talk",
+    body: "Their customers gather in specific subreddits and threads. The owner has never seen them, and wouldn't know what to say.",
+  },
+  {
+    n: "03",
+    title: "One post and done",
+    body: "Even when something gets posted, nobody watches what happens. No iteration, no learning, no second attempt.",
+  },
+];
+
+const FLOW = [
+  { n: "00", title: "Describe", body: "A 5-minute conversation. Five questions, no dashboard." },
+  { n: "01", title: "Research", body: "Find the market and where its customers actually talk." },
+  { n: "02", title: "Write & post", body: "Draft in the business's voice, score it, ship it." },
+  { n: "03", title: "Improve", body: "Watch engagement; rewrite when it underperforms." },
+];
+
+type Agent = {
+  label: string;
+  name: string;
+  role: string;
+  desc: string;
+  stack: string[];
+  handoff: string;
+};
+
+const AGENTS: Agent[] = [
+  {
+    label: "Agent 01 · Intake",
+    name: "Jack",
+    role: "the intake conversation",
+    desc: "Five questions over WhatsApp or a web form. Jack turns a 5-minute chat into a structured business brief — the only human input the system will ever need.",
+    stack: ["WhatsApp", "Vercel form", "Supabase"],
+    handoff: "→ hands the brief to Scout",
+  },
+  {
+    label: "Agent 02 · Research & content",
+    name: "Scout",
+    role: "the long-running researcher",
+    desc: "Reads Reddit, finds the audience, drafts a post, and scores it against the brief. Scout runs 30–45 minutes unattended — work a human would never sit through.",
+    stack: ["Hermes", "Modal", "Reddit API"],
+    handoff: "→ queues the post for Pulse",
+  },
+  {
+    label: "Agent 03 · Posting & self-improvement",
+    name: "Pulse",
+    role: "the engagement loop",
+    desc: "Posts to Reddit, then checks engagement every 10 minutes. When upvotes lag, Pulse rewrites and reposts — logging its reasoning at every step.",
+    stack: ["Hermes cron", "Reddit API", "engagement loop"],
+    handoff: "↻ keeps improving, on its own",
+  },
+];
+
 export function App() {
-  const [content] = useState<Content>(FALLBACK);
   const [health, setHealth] = useState<Health | null>(null);
-  const [healthError, setHealthError] = useState<string | null>(null);
+  const [healthError, setHealthError] = useState(false);
 
   useEffect(() => {
-    getJson<Health>("/api/health")
+    fetch(`${API_BASE}/api/health`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then(setHealth)
-      .catch((e) => setHealthError(String(e)));
+      .catch(() => setHealthError(true));
   }, []);
 
   return (
-    <div className="container">
-      <nav className="nav">
-        <div className="brand">
-          <img className="logo" src="/favicon.svg" alt="logo" />
-          <span>Handsoff</span>
-        </div>
-        <div className="nav-links">
-          <a href="#features">Features</a>
-          <a href="#status">Status</a>
-          <a
-            href="https://vercel.com/docs/monorepos"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Docs
+    <>
+      {/* ---------- top bar ---------- */}
+      <header className="topbar">
+        <div className="wrap topbar-inner">
+          <a className="brand" href="#top">
+            <Logo />
+            Signal
           </a>
-        </div>
-        <a className="cta" href="#cta">
-          Get started
-        </a>
-      </nav>
-
-      <header className="hero">
-        <span className="pill">
-          <span className="dot" />
-          Monorepo &middot; Vercel-ready
-        </span>
-        <h1>
-          <span className="grad">{content.title}</span>
-        </h1>
-        <p className="lead">{content.tagline}</p>
-        <div className="hero-actions" id="cta">
-          <a
-            className="cta"
-            href="https://github.com/richardlao/handsoff-hackathon"
-            target="_blank"
-            rel="noreferrer"
-          >
-            View on GitHub
-          </a>
-          <a className="cta ghost" href="#features">
-            See features
-          </a>
+          <nav className="topbar-nav">
+            <div className="topbar-links">
+              <a href="#problem">Problem</a>
+              <a href="#how">How it works</a>
+              <a href="#agents">The agents</a>
+            </div>
+            <a className="btn btn-accent" href={DEMO_URL} target="_blank" rel="noreferrer">
+              Go to Demo <span className="arrow">→</span>
+            </a>
+          </nav>
         </div>
       </header>
 
-      <section className="features" id="features">
-        <div className="section-title">
-          <h2>Everything wired up for you</h2>
-          <p>A mock monorepo you can deploy in minutes.</p>
-        </div>
-        <div className="grid">
-          {content.features.map((f) => (
-            <div className="card" key={f.title}>
-              <div className="icon">{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p>{f.body}</p>
+      <main id="top">
+        {/* ---------- hero ---------- */}
+        <section className="hero">
+          <div className="wrap reveal">
+            <span className="kicker label label-accent">
+              <Live />
+              Zero human input after intake
+            </span>
+            <h1>The business that markets itself.</h1>
+            <p className="sub">
+              Three agents. One five-minute conversation. Nobody at the keyboard.
+            </p>
+            <p className="lead">
+              A physical business describes itself in a <strong>5-minute conversation</strong>.
+              Signal researches their market, finds where their customers talk online, writes
+              content in their voice, posts it — and <strong>self-improves</strong> based on real
+              engagement.
+            </p>
+            <div className="hero-actions">
+              <a className="btn btn-accent" href={DEMO_URL} target="_blank" rel="noreferrer">
+                Go to Demo <span className="arrow">→</span>
+              </a>
+              <a className="btn btn-ghost" href="#agents">
+                Meet the agents
+              </a>
             </div>
-          ))}
-        </div>
+          </div>
+        </section>
 
-        <div className="status" id="status">
-          API status:{" "}
-          {health ? (
-            <>
-              <span className="ok">●</span> <code>{health.status}</code>{" "}
-              from <code>{health.service}</code> @{" "}
-              {new Date(health.timestamp).toLocaleTimeString()}
-            </>
-          ) : healthError ? (
-            <>
-              <span className="err">●</span> <code>unreachable</code> ({healthError})
-            </>
-          ) : (
-            <code>checking…</code>
-          )}
-        </div>
-      </section>
+        {/* ---------- pipeline diagram ---------- */}
+        <Pipeline />
 
+        {/* ---------- problem ---------- */}
+        <section className="band" id="problem">
+          <div className="wrap">
+            <div className="section-head">
+              <span className="eyebrow label label-accent">The problem</span>
+              <h2>Local businesses can't market themselves online.</h2>
+              <p>
+                It isn't a tools problem. The owner is the ceiling — they have the craft, but not
+                the time, the reach, or the patience to iterate. So nothing happens.
+              </p>
+            </div>
+            <div className="cards">
+              {PROBLEMS.map((p) => (
+                <div className="card" key={p.n}>
+                  <span className="num">{p.n}</span>
+                  <h3>{p.title}</h3>
+                  <p>{p.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- how it works ---------- */}
+        <section id="how">
+          <div className="wrap">
+            <div className="section-head">
+              <span className="eyebrow label label-accent">How it works</span>
+              <h2>One conversation in. A marketing team out.</h2>
+              <p>
+                After the 5-minute intake, no one logs in again. The system runs the whole loop on
+                its own — and keeps running.
+              </p>
+            </div>
+            <div className="steps">
+              {FLOW.map((f) => (
+                <div className="step" key={f.n}>
+                  <span className="n">{f.n}</span>
+                  <h4>{f.title}</h4>
+                  <p>{f.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- agents ---------- */}
+        <section className="band" id="agents">
+          <div className="wrap">
+            <div className="section-head center">
+              <span className="eyebrow label label-accent">The three agents</span>
+              <h2>Jack hands off to Scout. Scout hands off to Pulse.</h2>
+              <p>
+                Three agents, three jobs — from the first hello to the rewrite at midnight.
+              </p>
+            </div>
+            <div className="agent-grid">
+              {AGENTS.map((a) => (
+                <article className="agent" key={a.name}>
+                  <span className="agent-label">{a.label}</span>
+                  <h3>{a.name}</h3>
+                  <span className="role">{a.role}</span>
+                  <p className="desc">{a.desc}</p>
+                  <div className="stack">
+                    {a.stack.map((s) => (
+                      <span className="tag" key={s}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="handoff">{a.handoff}</div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- closing cta ---------- */}
+        <section className="cta">
+          <div className="wrap">
+            <span className="eyebrow label label-accent">See it run</span>
+            <h2 style={{ marginTop: 14 }}>See Signal run, unattended.</h2>
+            <p>
+              Watch Jack, Scout, and Pulse take a business from a 5-minute chat to a live,
+              self-improving post — no human at the keyboard.
+            </p>
+            <div className="cta-actions">
+              <a className="btn btn-accent" href={DEMO_URL} target="_blank" rel="noreferrer">
+                Go to Demo <span className="arrow">→</span>
+              </a>
+              <a className="btn btn-dark" href="#top">
+                Back to top
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ---------- footer ---------- */}
       <footer className="footer">
-        <span>© {new Date().getFullYear()} Handsoff Hackathon</span>
-        <span>Built with Vite + Fastify</span>
+        <div className="wrap footer-inner">
+          <div className="footer-left">
+            <Logo />
+            <span>© {new Date().getFullYear()} Signal</span>
+            <span className="api-status">
+              {health ? (
+                <>
+                  <span className="ok">●</span> api {health.status}
+                </>
+              ) : healthError ? (
+                <>
+                  <span className="err">●</span> api offline
+                </>
+              ) : (
+                <>● checking…</>
+              )}
+            </span>
+          </div>
+          <div className="footer-right">
+            <a href="#problem">Problem</a>
+            <a href="#how">How it works</a>
+            <a href="#agents">Agents</a>
+            <a href={DEMO_URL} target="_blank" rel="noreferrer">
+              Go to Demo →
+            </a>
+          </div>
+        </div>
       </footer>
-    </div>
+    </>
   );
 }

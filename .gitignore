@@ -23,3 +23,10 @@ pnpm-debug.log*
 .idea
 .vscode/*
 !.vscode/extensions.json
+
+# agent harness configs (impeccable install — machine-local)
+.claude/
+.codex/
+.cursor/
+.agents/
+.impeccable/
