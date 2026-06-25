@@ -1229,7 +1229,7 @@ section {
 }
 
 .app-shell-main .chat-main {
-  justify-content: flex-start;
+  justify-content: center;
   padding-inline: clamp(22px, 5vw, 44px);
 }
 
@@ -2295,6 +2295,223 @@ section {
 }
 
 .mp-contact:active {
+  transform: translateY(1px);
+}
+
+/* content agent button */
+.mp-agent-btn {
+  margin-top: 12px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: oklch(0.99 0 0);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease),
+    color 0.15s var(--ease), transform 0.12s var(--ease);
+}
+
+.mp-agent-btn .arrow {
+  transition: transform 0.15s var(--ease);
+}
+
+.mp-agent-btn:hover {
+  background: color-mix(in oklab, var(--accent) 88%, black);
+}
+
+.mp-agent-btn:hover .arrow {
+  transform: translateX(3px);
+}
+
+.mp-agent-btn:active {
+  transform: translateY(1px);
+}
+
+.mp-agent-btn.is-contacted {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+  cursor: default;
+}
+
+/* email composer overlay — large modal */
+.mp-email-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vh, 48px);
+  background: oklch(0 0 0 / 0.55);
+  backdrop-filter: blur(3px);
+  animation: mp-email-fade 0.15s var(--ease);
+}
+
+@keyframes mp-email-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mp-email {
+  width: min(900px, 100%);
+  height: min(760px, 100%);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px clamp(22px, 4vw, 44px);
+  border-radius: calc(var(--radius) * 1.4);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.65);
+  animation: mp-email-pop 0.18s var(--ease);
+}
+
+@keyframes mp-email-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mp-email-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mp-email-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.mp-email-x {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.mp-email-x:hover {
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.mp-email-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mp-email-label {
+  width: 56px;
+  flex: none;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mp-email-row input,
+.mp-email-body {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  transition: border-color 0.15s var(--ease);
+}
+
+.mp-email-row input:focus,
+.mp-email-body:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.mp-email-body {
+  flex: 1;
+  resize: none;
+  min-height: 240px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.mp-email-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+  margin-top: auto;
+}
+
+.mp-email-cancel,
+.mp-email-send {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease),
+    border-color 0.15s var(--ease), transform 0.12s var(--ease);
+}
+
+.mp-email-cancel {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink);
+}
+
+.mp-email-cancel:hover {
+  border-color: var(--ink);
+}
+
+.mp-email-send {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: oklch(0.99 0 0);
+}
+
+.mp-email-send:hover {
+  background: color-mix(in oklab, var(--accent) 88%, black);
+}
+
+.mp-email-send .arrow {
+  transition: transform 0.15s var(--ease);
+}
+
+.mp-email-send:hover .arrow {
+  transform: translateX(3px);
+}
+
+.mp-email-cancel:active,
+.mp-email-send:active {
   transform: translateY(1px);
 }
 
@@ -3916,6 +4133,7 @@ section {
 
 /* ---------- thumbnails inside week pills ---------- */
 .sched-pill-thumb {
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: var(--radius);
@@ -3929,6 +4147,22 @@ section {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.sched-pill-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  color: oklch(0.99 0 0);
+  background: rgba(0, 0, 0, 0.26);
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+}
+
+.sched-pill:hover .sched-pill-play {
+  opacity: 1;
 }
 
 /* ---------- month view ---------- */
@@ -4039,3 +4273,259 @@ section {
     min-height: 78px;
   }
 }
+
+/* ===================== schedule planner (drag & drop editor) ===================== */
+.sched-hint {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.sched-planner {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ---------- pending tray (left) ---------- */
+.sched-pending {
+  position: sticky;
+  top: 16px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 32px);
+  transition: box-shadow 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.sched-pending.is-over {
+  box-shadow: inset 0 0 0 2px var(--accent);
+  background: var(--accent-light);
+}
+
+.sched-pending-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sched-pending-head h3 {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.sched-pending-count {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: oklch(0.97 0 0);
+  background: var(--ink);
+  border-radius: 999px;
+  min-width: 22px;
+  text-align: center;
+  padding: 2px 7px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sched-pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.sched-pending-empty {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ---------- day grid (right), x-axis = time ---------- */
+.sched-daygrid-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.sched-daygrid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, 1fr);
+  min-width: max-content;
+}
+
+.sched-slot {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px dashed var(--border);
+  min-height: 320px;
+  transition: background 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.sched-slot:last-child {
+  border-right: none;
+}
+
+.sched-slot.is-over {
+  background: var(--accent-light);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.sched-slot-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 10px 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.sched-slot-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  flex: 1;
+}
+
+/* ---------- video card (shared, draggable) ---------- */
+.vcard {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(20, 24, 29, 0.05);
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease),
+    transform 0.12s var(--ease);
+}
+
+.vcard:hover {
+  border-color: var(--ink);
+  box-shadow: 0 4px 14px rgba(20, 24, 29, 0.1);
+}
+
+.vcard:active {
+  cursor: grabbing;
+}
+
+.vcard.is-dragging {
+  opacity: 0.4;
+}
+
+.vcard.st-draft {
+  border-style: dashed;
+}
+
+.vcard-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: calc(var(--radius) - 1px);
+  overflow: hidden;
+  background: var(--panel-alt);
+}
+
+.vcard-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vcard-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  color: oklch(0.99 0 0);
+  background: rgba(0, 0, 0, 0.26);
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+}
+
+.vcard:hover .vcard-play {
+  opacity: 1;
+}
+
+.vcard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vcard-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.vcard-title {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.32;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  .sched-planner {
+    grid-template-columns: 1fr;
+  }
+  .sched-pending {
+    position: static;
+    max-height: none;
+  }
+  .sched-pending-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .sched-pending-list .vcard {
+    width: 200px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vcard,
+  .vcard-play,
+  .sched-slot,
+  .sched-pending {
+    transition: none;
+  }
+}
+

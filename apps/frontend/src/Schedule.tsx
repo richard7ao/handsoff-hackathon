@@ -15,7 +15,6 @@ function Logo() {
 
 type Platform = "reddit" | "instagram" | "x" | "whatsapp";
 type Status = "posted" | "scheduled" | "draft";
-type ViewMode = "day" | "week" | "month";
 
 type Post = {
   id: string;
@@ -28,7 +27,17 @@ type Post = {
   thumb: string;
 };
 
-type Event = Post & { date: Date };
+// A planner item: when date/time are null it lives in the pending tray.
+type Item = {
+  id: string;
+  date: Date | null;
+  time: string | null;
+  platform: Platform;
+  channel: string;
+  title: string;
+  status: Status;
+  thumb: string;
+};
 
 const PLATFORM_LABEL: Record<Platform, string> = {
   reddit: "Reddit",
@@ -39,10 +48,6 @@ const PLATFORM_LABEL: Record<Platform, string> = {
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKDAYS_LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 
 const STATUS_LABEL: Record<Status, string> = {
   posted: "Posted",
@@ -67,22 +72,22 @@ function addDays(d: Date, n: number) {
   x.setDate(x.getDate() + n);
   return x;
 }
-function addMonths(d: Date, n: number) {
-  const x = new Date(d);
-  x.setMonth(x.getMonth() + n);
-  return x;
-}
 function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 function fmtDayHeader(d: Date) {
   return `${WEEKDAYS_LONG[dowIndex(d)]} ${fmtDMY(d)}`;
 }
-function shiftTime(t: string, mins: number) {
-  const [h, m] = t.split(":").map(Number);
-  const total = (h * 60 + m + mins + 1440) % 1440;
-  return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
-}
+
+/* ----- day-grid time axis ----- */
+// Columns along the x-axis, one per hour of the posting window.
+const SLOT_START = 7; // 07:00
+const SLOT_END = 21; // 21:00 inclusive
+const SLOTS = Array.from({ length: SLOT_END - SLOT_START + 1 }, (_, i) => `${pad(SLOT_START + i)}:00`);
+const slotIndexOf = (time: string) => {
+  const hour = Number(time.split(":")[0]);
+  return Math.min(Math.max(hour - SLOT_START, 0), SLOTS.length - 1);
+};
 
 /* ----------------------------- mock data ----------------------------- */
 
@@ -100,9 +105,68 @@ const POSTS: Post[] = [
   { id: "p9", day: 6, time: "19:00", platform: "instagram", channel: "Story", title: "Sunday wrap — the week at Bella's", status: "draft", thumb: thumb("signal-ig-9") },
 ];
 
-function buildEvents(): Event[] {
+// Videos waiting to be placed — they start life in the pending tray.
+const PENDING: Item[] = [
+  { id: "q1", date: null, time: null, platform: "instagram", channel: "Reel", title: "Fresh fade, slow motion — the Tuesday walk-in", status: "draft", thumb: thumb("signal-pending-1") },
+  { id: "q2", date: null, time: null, platform: "x", channel: "Post", title: "Three things every Austin barber wishes you knew", status: "draft", thumb: thumb("signal-pending-2") },
+  { id: "q3", date: null, time: null, platform: "reddit", channel: "r/Austin", title: "We tried staying open late on Thursdays. Here's what happened.", status: "draft", thumb: thumb("signal-pending-3") },
+];
+
+function buildItems(): Item[] {
   const ws = startOfWeek(new Date());
-  return POSTS.map((p) => ({ ...p, date: addDays(ws, p.day) }));
+  const placed: Item[] = POSTS.map((p) => ({
+    id: p.id,
+    date: addDays(ws, p.day),
+    time: p.time,
+    platform: p.platform,
+    channel: p.channel,
+    title: p.title,
+    status: p.status,
+    thumb: p.thumb,
+  }));
+  return [...placed, ...PENDING.map((q) => ({ ...q }))];
+}
+
+/* ----------------------------- video card ----------------------------- */
+
+function VideoCard({
+  item,
+  showTime,
+  onDragStart,
+  onDragEnd,
+  dragging,
+}: {
+  item: Item;
+  showTime?: boolean;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+  dragging: boolean;
+}) {
+  return (
+    <article
+      className={`vcard plat-${item.platform} st-${item.status}${dragging ? " is-dragging" : ""}`}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", item.id);
+        onDragStart(item.id);
+      }}
+      onDragEnd={onDragEnd}
+    >
+      <div className="vcard-thumb">
+        <img src={item.thumb} alt="" loading="lazy" />
+        <span className="vcard-play" aria-hidden="true">▶</span>
+      </div>
+      <div className="vcard-body">
+        <span className="vcard-meta">
+          <span className="sched-plat-dot" aria-hidden="true" />
+          {showTime && item.time ? `${item.time} · ` : ""}
+          {PLATFORM_LABEL[item.platform]}
+        </span>
+        <span className="vcard-title">{item.title}</span>
+      </div>
+    </article>
+  );
 }
 
 /* ----------------------------- page ----------------------------- */
@@ -110,23 +174,21 @@ function buildEvents(): Event[] {
 export function Schedule() {
   const [filter, setFilter] = useState<Status | "all">("all");
   const [editing, setEditing] = useState(false);
-  const [view, setView] = useState<ViewMode>("day");
-  const [allEvents, setAllEvents] = useState<Event[]>(buildEvents);
-  // editor anchor — default to Monday of the current week ("Monday dd-mm-yyyy")
-  const [anchor, setAnchor] = useState<Date>(() => startOfWeek(new Date()));
+  const [items, setItems] = useState<Item[]>(buildItems);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overTarget, setOverTarget] = useState<string | null>(null); // slot time or "pending"
+  // editor day — default to today
+  const [anchor, setAnchor] = useState<Date>(() => new Date(new Date().setHours(0, 0, 0, 0)));
 
-  const events = useMemo(
-    () => (filter === "all" ? allEvents : allEvents.filter((e) => e.status === filter)),
-    [allEvents, filter],
-  );
+  const passes = (it: Item) => filter === "all" || it.status === filter;
 
   const counts = useMemo(
     () => ({
-      scheduled: allEvents.filter((e) => e.status === "scheduled").length,
-      draft: allEvents.filter((e) => e.status === "draft").length,
-      posted: allEvents.filter((e) => e.status === "posted").length,
+      scheduled: items.filter((e) => e.status === "scheduled").length,
+      draft: items.filter((e) => e.status === "draft").length,
+      posted: items.filter((e) => e.status === "posted").length,
     }),
-    [allEvents],
+    [items],
   );
 
   const FILTERS: { key: Status | "all"; label: string }[] = [
@@ -136,56 +198,74 @@ export function Schedule() {
     { key: "posted", label: `Posted · ${counts.posted}` },
   ];
 
-  /* ----- overview helpers ----- */
+  /* ----- overview helpers (current week) ----- */
+  const weekStart = startOfWeek(new Date());
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
   const byDay = useMemo(() => {
-    const map: Record<number, Event[]> = {};
+    const map: Record<number, Item[]> = {};
     for (let d = 0; d < 7; d++) map[d] = [];
-    for (const e of events) map[e.day].push(e);
-    for (let d = 0; d < 7; d++) map[d].sort((a, b) => a.time.localeCompare(b.time));
+    for (const it of items) {
+      if (!it.date || !it.time || !passes(it)) continue;
+      const dayIdx = weekDays.findIndex((d) => sameDay(d, it.date as Date));
+      if (dayIdx >= 0) map[dayIdx].push(it);
+    }
+    for (let d = 0; d < 7; d++) map[d].sort((a, b) => (a.time as string).localeCompare(b.time as string));
     return map;
-  }, [events]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, filter]);
 
   const upcoming = useMemo(
     () =>
-      [...events]
-        .filter((e) => e.status !== "posted")
-        .sort((a, b) => a.day - b.day || a.time.localeCompare(b.time)),
-    [events],
+      items
+        .filter((it) => it.date && it.time && it.status !== "posted" && passes(it))
+        .sort((a, b) => (a.date as Date).getTime() - (b.date as Date).getTime() || (a.time as string).localeCompare(b.time as string)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items, filter],
   );
 
   /* ----- editor helpers ----- */
-  const eventsOn = (d: Date) =>
-    events.filter((e) => sameDay(e.date, d)).sort((a, b) => a.time.localeCompare(b.time));
+  const pending = useMemo(() => items.filter((it) => it.date === null), [items]);
+  const dayItems = useMemo(
+    () => items.filter((it) => it.date && sameDay(it.date, anchor)),
+    [items, anchor],
+  );
+  const itemsInSlot = (slotIndex: number) =>
+    dayItems
+      .filter((it) => it.time && slotIndexOf(it.time) === slotIndex)
+      .sort((a, b) => (a.time as string).localeCompare(b.time as string));
 
   function step(dir: 1 | -1) {
-    setAnchor((a) => (view === "day" ? addDays(a, dir) : view === "week" ? addDays(a, dir * 7) : addMonths(a, dir)));
+    setAnchor((a) => addDays(a, dir));
   }
   function goToday() {
-    setAnchor(view === "day" ? new Date(new Date().setHours(0, 0, 0, 0)) : startOfWeek(new Date()));
+    setAnchor(new Date(new Date().setHours(0, 0, 0, 0)));
   }
-  function nudge(id: string, mins: number) {
-    setAllEvents((list) => list.map((e) => (e.id === id ? { ...e, time: shiftTime(e.time, mins) } : e)));
-  }
-  function moveDay(id: string, dir: 1 | -1) {
-    setAllEvents((list) =>
-      list.map((e) => (e.id === id ? { ...e, date: addDays(e.date, dir), day: (e.day + dir + 7) % 7 } : e)),
+
+  function placeInSlot(slot: string) {
+    if (!dragId) return;
+    setItems((list) =>
+      list.map((it) =>
+        it.id === dragId
+          ? { ...it, date: new Date(anchor), time: slot, status: it.status === "posted" ? "posted" : "scheduled" }
+          : it,
+      ),
     );
+    resetDrag();
+  }
+  function moveToPending() {
+    if (!dragId) return;
+    setItems((list) =>
+      list.map((it) => (it.id === dragId ? { ...it, date: null, time: null, status: "draft" } : it)),
+    );
+    resetDrag();
+  }
+  function resetDrag() {
+    setDragId(null);
+    setOverTarget(null);
   }
 
-  const weekStart = startOfWeek(anchor);
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const monthCells = useMemo(() => {
-    const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
-    const gridStart = startOfWeek(first);
-    return Array.from({ length: 42 }, (_, i) => addDays(gridStart, i));
-  }, [anchor]);
-
-  const headerLabel =
-    view === "day"
-      ? fmtDayHeader(anchor)
-      : view === "week"
-        ? `${fmtDMY(weekStart)} – ${fmtDMY(addDays(weekStart, 6))}`
-        : `${MONTHS[anchor.getMonth()]} ${anchor.getFullYear()}`;
+  const headerLabel = fmtDayHeader(anchor);
 
   return (
     <AppShell current="schedule">
@@ -241,10 +321,10 @@ export function Schedule() {
             <section className="sched-editor" aria-label="Edit schedule">
               <div className="sched-nav">
                 <div className="sched-nav-left">
-                  <button className="sched-navbtn" onClick={() => step(-1)} aria-label={`Previous ${view}`}>
+                  <button className="sched-navbtn" onClick={() => step(-1)} aria-label="Previous day">
                     ‹
                   </button>
-                  <button className="sched-navbtn" onClick={() => step(1)} aria-label={`Next ${view}`}>
+                  <button className="sched-navbtn" onClick={() => step(1)} aria-label="Next day">
                     ›
                   </button>
                   <button className="sched-today" onClick={goToday}>
@@ -252,120 +332,84 @@ export function Schedule() {
                   </button>
                   <h2 className="sched-nav-label">{headerLabel}</h2>
                 </div>
-                <label className="sched-viewwrap">
-                  <span className="sched-viewlabel">View</span>
-                  <select
-                    className="sched-viewsel"
-                    value={view}
-                    onChange={(e) => setView(e.target.value as ViewMode)}
-                    aria-label="Calendar view"
-                  >
-                    <option value="day">Day</option>
-                    <option value="week">Week</option>
-                    <option value="month">Month</option>
-                  </select>
-                </label>
+                <span className="sched-hint">Drag a video onto a time slot to schedule it.</span>
               </div>
 
-              {/* ----- DAY VIEW ----- */}
-              {view === "day" && (
-                <div className="sched-day">
-                  {eventsOn(anchor).length === 0 ? (
-                    <p className="sched-queue-empty">Nothing scheduled on {fmtDayHeader(anchor)}.</p>
-                  ) : (
-                    eventsOn(anchor).map((e) => (
-                      <article className={`sched-event plat-${e.platform}`} key={e.id}>
-                        <div className="sched-thumb">
-                          <img src={e.thumb} alt="" loading="lazy" />
-                          <span className="sched-thumb-play" aria-hidden="true">▶</span>
-                        </div>
-                        <div className="sched-event-body">
-                          <span className="sched-event-when">
-                            <span className="sched-plat-dot" aria-hidden="true" />
-                            {WEEKDAYS_LONG[dowIndex(e.date)]} · {e.time}
-                          </span>
-                          <span className="sched-event-title">{e.title}</span>
-                          <span className="sched-event-meta">
-                            {PLATFORM_LABEL[e.platform]} · {e.channel}
-                            <span className={`sched-status st-${e.status}`}>{STATUS_LABEL[e.status]}</span>
-                          </span>
-                        </div>
-                        <div className="sched-event-actions">
-                          <button onClick={() => nudge(e.id, -15)} title="15 minutes earlier">−15m</button>
-                          <button onClick={() => nudge(e.id, 15)} title="15 minutes later">+15m</button>
-                          <button onClick={() => moveDay(e.id, -1)} title="Move to previous day">‹ day</button>
-                          <button onClick={() => moveDay(e.id, 1)} title="Move to next day">day ›</button>
-                        </div>
-                      </article>
-                    ))
-                  )}
-                </div>
-              )}
+              <div className="sched-planner">
+                {/* ----- pending tray (left) ----- */}
+                <aside
+                  className={`sched-pending${overTarget === "pending" ? " is-over" : ""}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setOverTarget("pending");
+                  }}
+                  onDragLeave={() => setOverTarget((t) => (t === "pending" ? null : t))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    moveToPending();
+                  }}
+                >
+                  <div className="sched-pending-head">
+                    <h3>Pending videos</h3>
+                    <span className="sched-pending-count">{pending.length}</span>
+                  </div>
+                  <div className="sched-pending-list">
+                    {pending.length === 0 ? (
+                      <p className="sched-pending-empty">
+                        Nothing pending — every video is on the schedule. Drag one back here to unschedule it.
+                      </p>
+                    ) : (
+                      pending.map((it) => (
+                        <VideoCard
+                          key={it.id}
+                          item={it}
+                          onDragStart={setDragId}
+                          onDragEnd={resetDrag}
+                          dragging={dragId === it.id}
+                        />
+                      ))
+                    )}
+                  </div>
+                </aside>
 
-              {/* ----- WEEK VIEW ----- */}
-              {view === "week" && (
-                <div className="sched-week">
-                  {weekDays.map((d) => (
-                    <div className="sched-col" key={d.toISOString()}>
-                      <div className="sched-col-head">
-                        <span className="sched-dow">{DAYS[dowIndex(d)]}</span>
-                        <span className="sched-date">{d.getDate()}</span>
-                      </div>
-                      <div className="sched-col-body">
-                        {eventsOn(d).length === 0 ? (
-                          <span className="sched-empty">—</span>
-                        ) : (
-                          eventsOn(d).map((e) => (
-                            <article className={`sched-pill plat-${e.platform} st-${e.status}`} key={e.id}>
-                              <div className="sched-pill-thumb">
-                                <img src={e.thumb} alt="" loading="lazy" />
-                              </div>
-                              <span className="sched-pill-top">
-                                <span className="sched-plat-dot" aria-hidden="true" />
-                                <span className="sched-time">{e.time}</span>
-                                <span className="sched-plat">{PLATFORM_LABEL[e.platform]}</span>
-                              </span>
-                              <span className="sched-pill-title">{e.title}</span>
-                            </article>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* ----- MONTH VIEW ----- */}
-              {view === "month" && (
-                <div className="sched-month">
-                  {DAYS.map((d) => (
-                    <div className="sched-mhead" key={d}>
-                      {d}
-                    </div>
-                  ))}
-                  {monthCells.map((d) => {
-                    const dayEvents = eventsOn(d);
-                    const inMonth = d.getMonth() === anchor.getMonth();
-                    return (
-                      <div className={`sched-mcell${inMonth ? "" : " is-out"}`} key={d.toISOString()}>
-                        <span className="sched-mdate">{d.getDate()}</span>
-                        <div className="sched-mevents">
-                          {dayEvents.slice(0, 3).map((e) => (
-                            <span className={`sched-mevent plat-${e.platform}`} key={e.id} title={`${DAYS[dowIndex(e.date)]} ${e.time} · ${e.title}`}>
-                              <img className="sched-mthumb" src={e.thumb} alt="" loading="lazy" />
-                              <span className="sched-mtime">{e.time}</span>
-                              <span className="sched-mtitle">{e.title}</span>
-                            </span>
-                          ))}
-                          {dayEvents.length > 3 && (
-                            <span className="sched-mmore">+{dayEvents.length - 3} more</span>
-                          )}
+                {/* ----- day grid (right), x-axis = time ----- */}
+                <div className="sched-daygrid-wrap">
+                  <div className="sched-daygrid" role="grid" aria-label={`Schedule for ${headerLabel}`}>
+                    {SLOTS.map((slot, i) => {
+                      const slotItems = itemsInSlot(i);
+                      return (
+                        <div
+                          key={slot}
+                          className={`sched-slot${overTarget === slot ? " is-over" : ""}`}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            setOverTarget(slot);
+                          }}
+                          onDragLeave={() => setOverTarget((t) => (t === slot ? null : t))}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            placeInSlot(slot);
+                          }}
+                        >
+                          <div className="sched-slot-head">{slot}</div>
+                          <div className="sched-slot-body">
+                            {slotItems.map((it) => (
+                              <VideoCard
+                                key={it.id}
+                                item={it}
+                                showTime
+                                onDragStart={setDragId}
+                                onDragEnd={resetDrag}
+                                dragging={dragId === it.id}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
+              </div>
             </section>
           ) : (
             /* ===================== OVERVIEW ===================== */
@@ -384,6 +428,10 @@ export function Schedule() {
                       ) : (
                         byDay[i].map((e) => (
                           <article className={`sched-pill plat-${e.platform} st-${e.status}`} key={e.id}>
+                            <div className="sched-pill-thumb">
+                              <img src={e.thumb} alt="" loading="lazy" />
+                              <span className="sched-pill-play" aria-hidden="true">▶</span>
+                            </div>
                             <span className="sched-pill-top">
                               <span className="sched-plat-dot" aria-hidden="true" />
                               <span className="sched-time">{e.time}</span>
@@ -414,7 +462,7 @@ export function Schedule() {
                     {upcoming.map((e) => (
                       <li className="sched-row" key={e.id}>
                         <span className="sched-row-when">
-                          <span className="sched-row-day">{DAYS[e.day]}</span>
+                          <span className="sched-row-day">{DAYS[dowIndex(e.date as Date)]}</span>
                           <span className="sched-row-time">{e.time}</span>
                         </span>
                         <span className={`sched-plat-dot plat-${e.platform}`} aria-hidden="true" />

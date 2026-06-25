@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Pipeline } from "./Pipeline";
 
-/** Where "Go to Demo" points — the interactive demo page in this app. */
-const DEMO_URL = "/demo";
+/** Primary CTA target — the interactive assistant. */
+const CTA_URL = "/chat";
 
 type Health = { status: string; timestamp: number; service: string };
 const API_BASE = import.meta.env.VITE_API_URL ?? "";

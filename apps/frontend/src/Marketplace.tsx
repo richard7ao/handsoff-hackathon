@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { AppShell } from "./Sidebar";
 
 function Logo() {
@@ -12,15 +13,6 @@ function Logo() {
 }
 
 /* ---------------- contact glyphs ---------------- */
-
-function MailGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M3.5 6.5 12 13l8.5-6.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 function XGlyph() {
   return (
@@ -65,7 +57,11 @@ function StarGlyph() {
   );
 }
 
-/* ---------------- mock data ---------------- */
+/* ---------------- creator data ----------------
+ * Real public figures with their verified, official social accounts.
+ * Photos are freely-licensed portraits served from Wikimedia Commons.
+ * Marketplace fields (rate / availability / rating) are illustrative.
+ */
 
 type Creator = {
   name: string;
@@ -79,165 +75,156 @@ type Creator = {
   followers: string;
   rate: number;
   available: boolean;
-  email: string;
-  x: string;
-  instagram: string;
-  tiktok: string;
+  x?: string;
+  instagram?: string;
+  tiktok?: string;
 };
+
+const commonsPhoto = (file: string, width = 480) =>
+  `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`;
 
 const CREATORS: Creator[] = [
   {
-    name: "Maya Chen",
-    handle: "@mayamakes",
-    photo: "https://i.pravatar.cc/400?img=47",
-    location: "Austin, TX",
-    specialisations: ["Food & Drink", "Short-form video", "Recipes"],
-    audience: ["Gen Z", "Foodies", "Local · ATX"],
-    rating: 4.9,
-    reviews: 128,
-    followers: "412K",
-    rate: 850,
-    available: true,
-    email: "maya.chen@creators.mock",
-    x: "https://x.com/mayamakes",
-    instagram: "https://instagram.com/mayamakes",
-    tiktok: "https://tiktok.com/@mayamakes",
-  },
-  {
-    name: "Jordan Reyes",
-    handle: "@jordanlifts",
-    photo: "https://i.pravatar.cc/400?img=12",
-    location: "Los Angeles, CA",
-    specialisations: ["Fitness", "Wellness", "Day-in-the-life"],
-    audience: ["Millennials", "Gym-goers", "Health-conscious"],
-    rating: 4.8,
-    reviews: 96,
-    followers: "287K",
-    rate: 1200,
-    available: true,
-    email: "jordan.reyes@creators.mock",
-    x: "https://x.com/jordanlifts",
-    instagram: "https://instagram.com/jordanlifts",
-    tiktok: "https://tiktok.com/@jordanlifts",
-  },
-  {
-    name: "Aisha Bello",
-    handle: "@aishabeauty",
-    photo: "https://i.pravatar.cc/400?img=32",
-    location: "Brooklyn, NY",
-    specialisations: ["Beauty", "Skincare", "Tutorials"],
-    audience: ["Gen Z", "Beauty buyers", "Women 18–34"],
+    name: "Cristiano Ronaldo",
+    handle: "@cristiano",
+    photo: commonsPhoto("Cristiano Ronaldo in Al Nassr in 2023.jpg"),
+    location: "Riyadh, SA",
+    specialisations: ["Football", "Sport", "Lifestyle"],
+    audience: ["Global", "Sports fans", "Men 18–44"],
     rating: 5.0,
-    reviews: 211,
-    followers: "738K",
-    rate: 1500,
+    reviews: 9800,
+    followers: "660M",
+    rate: 3200000,
     available: false,
-    email: "aisha.bello@creators.mock",
-    x: "https://x.com/aishabeauty",
-    instagram: "https://instagram.com/aishabeauty",
-    tiktok: "https://tiktok.com/@aishabeauty",
+    x: "https://x.com/Cristiano",
+    instagram: "https://instagram.com/cristiano",
+    tiktok: "https://tiktok.com/@cristiano",
   },
   {
-    name: "Leo Martins",
-    handle: "@leobuilds",
-    photo: "https://i.pravatar.cc/400?img=15",
-    location: "Denver, CO",
-    specialisations: ["Home & DIY", "Reviews", "Tutorials"],
-    audience: ["Homeowners", "Millennials", "Dads"],
-    rating: 4.7,
-    reviews: 64,
-    followers: "154K",
-    rate: 600,
-    available: true,
-    email: "leo.martins@creators.mock",
-    x: "https://x.com/leobuilds",
-    instagram: "https://instagram.com/leobuilds",
-    tiktok: "https://tiktok.com/@leobuilds",
-  },
-  {
-    name: "Priya Nair",
-    handle: "@priyatravels",
-    photo: "https://i.pravatar.cc/400?img=45",
+    name: "Lionel Messi",
+    handle: "@leomessi",
+    photo: commonsPhoto("Lionel Messi WC2022.jpg"),
     location: "Miami, FL",
-    specialisations: ["Travel", "Lifestyle", "Photography"],
-    audience: ["Millennials", "Luxury", "Couples"],
-    rating: 4.9,
-    reviews: 142,
-    followers: "523K",
-    rate: 1800,
-    available: true,
-    email: "priya.nair@creators.mock",
-    x: "https://x.com/priyatravels",
-    instagram: "https://instagram.com/priyatravels",
-    tiktok: "https://tiktok.com/@priyatravels",
-  },
-  {
-    name: "Sam Okafor",
-    handle: "@samtechtips",
-    photo: "https://i.pravatar.cc/400?img=51",
-    location: "Seattle, WA",
-    specialisations: ["Tech", "Gadget reviews", "Explainers"],
-    audience: ["Gen Z", "Early adopters", "Students"],
-    rating: 4.6,
-    reviews: 88,
-    followers: "201K",
-    rate: 900,
-    available: true,
-    email: "sam.okafor@creators.mock",
-    x: "https://x.com/samtechtips",
-    instagram: "https://instagram.com/samtechtips",
-    tiktok: "https://tiktok.com/@samtechtips",
-  },
-  {
-    name: "Hana Kim",
-    handle: "@hanaeats",
-    photo: "https://i.pravatar.cc/400?img=23",
-    location: "San Francisco, CA",
-    specialisations: ["Food & Drink", "Vlogs", "Local guides"],
-    audience: ["Foodies", "Local · SF", "Gen Z"],
-    rating: 4.8,
-    reviews: 73,
-    followers: "168K",
-    rate: 700,
+    specialisations: ["Football", "Sport", "Lifestyle"],
+    audience: ["Global", "Sports fans", "Families"],
+    rating: 5.0,
+    reviews: 8700,
+    followers: "505M",
+    rate: 2600000,
     available: false,
-    email: "hana.kim@creators.mock",
-    x: "https://x.com/hanaeats",
-    instagram: "https://instagram.com/hanaeats",
-    tiktok: "https://tiktok.com/@hanaeats",
+    instagram: "https://instagram.com/leomessi",
+    tiktok: "https://tiktok.com/@leomessi",
   },
   {
-    name: "Marcus Hill",
-    handle: "@marcusfits",
-    photo: "https://i.pravatar.cc/400?img=59",
-    location: "Chicago, IL",
-    specialisations: ["Fitness", "Nutrition", "Coaching"],
-    audience: ["Millennials", "Athletes", "Men 25–40"],
-    rating: 4.7,
-    reviews: 109,
-    followers: "342K",
-    rate: 1100,
+    name: "Selena Gomez",
+    handle: "@selenagomez",
+    photo: commonsPhoto("Selena Gomez at the 2024 Toronto International Film Festival 10 (cropped).jpg"),
+    location: "Los Angeles, CA",
+    specialisations: ["Beauty", "Music", "Acting"],
+    audience: ["Gen Z", "Beauty buyers", "Women 18–34"],
+    rating: 4.9,
+    reviews: 5400,
+    followers: "420M",
+    rate: 1800000,
     available: true,
-    email: "marcus.hill@creators.mock",
-    x: "https://x.com/marcusfits",
-    instagram: "https://instagram.com/marcusfits",
-    tiktok: "https://tiktok.com/@marcusfits",
+    x: "https://x.com/selenagomez",
+    instagram: "https://instagram.com/selenagomez",
+    tiktok: "https://tiktok.com/@selenagomez",
   },
   {
-    name: "Elena Rossi",
-    handle: "@elenastyle",
-    photo: "https://i.pravatar.cc/400?img=20",
-    location: "New York, NY",
-    specialisations: ["Fashion", "Styling", "Hauls"],
+    name: "Dwayne Johnson",
+    handle: "@therock",
+    photo: commonsPhoto("Dwayne Johnson 2014 (cropped).jpg"),
+    location: "Los Angeles, CA",
+    specialisations: ["Fitness", "Acting", "Lifestyle"],
+    audience: ["Global", "Gym-goers", "Men 18–44"],
+    rating: 4.9,
+    reviews: 6100,
+    followers: "393M",
+    rate: 1700000,
+    available: true,
+    x: "https://x.com/TheRock",
+    instagram: "https://instagram.com/therock",
+    tiktok: "https://tiktok.com/@therock",
+  },
+  {
+    name: "Kim Kardashian",
+    handle: "@kimkardashian",
+    photo: commonsPhoto("Kim Kardashian 2017 (cropped).png"),
+    location: "Los Angeles, CA",
+    specialisations: ["Fashion", "Beauty", "Business"],
+    audience: ["Millennials", "Beauty buyers", "Women 18–34"],
+    rating: 4.8,
+    reviews: 4700,
+    followers: "364M",
+    rate: 1500000,
+    available: true,
+    x: "https://x.com/KimKardashian",
+    instagram: "https://instagram.com/kimkardashian",
+    tiktok: "https://tiktok.com/@kimkardashian",
+  },
+  {
+    name: "Billie Eilish",
+    handle: "@billieeilish",
+    photo: commonsPhoto("Billie Eilish 2019 by Glenn Francis (cropped).jpg"),
+    location: "Los Angeles, CA",
+    specialisations: ["Music", "Fashion", "Sustainability"],
+    audience: ["Gen Z", "Music fans", "Women 16–30"],
+    rating: 4.9,
+    reviews: 3900,
+    followers: "120M",
+    rate: 900000,
+    available: true,
+    x: "https://x.com/billieeilish",
+    instagram: "https://instagram.com/billieeilish",
+    tiktok: "https://tiktok.com/@billieeilish",
+  },
+  {
+    name: "Zendaya",
+    handle: "@zendaya",
+    photo: commonsPhoto("Zendaya 2019 by Glenn Francis (cropped).jpg"),
+    location: "Oakland, CA",
+    specialisations: ["Fashion", "Acting", "Beauty"],
     audience: ["Gen Z", "Fashion buyers", "Women 18–34"],
     rating: 4.9,
-    reviews: 187,
-    followers: "604K",
-    rate: 1600,
+    reviews: 4200,
+    followers: "184M",
+    rate: 1300000,
     available: true,
-    email: "elena.rossi@creators.mock",
-    x: "https://x.com/elenastyle",
-    instagram: "https://instagram.com/elenastyle",
-    tiktok: "https://tiktok.com/@elenastyle",
+    x: "https://x.com/Zendaya",
+    instagram: "https://instagram.com/zendaya",
+  },
+  {
+    name: "Gordon Ramsay",
+    handle: "@gordongram",
+    photo: commonsPhoto("Gordon Ramsay.jpg"),
+    location: "London, UK",
+    specialisations: ["Food & Drink", "Cooking", "Reviews"],
+    audience: ["Foodies", "Home cooks", "Millennials"],
+    rating: 4.8,
+    reviews: 5100,
+    followers: "17.7M",
+    rate: 650000,
+    available: true,
+    x: "https://x.com/GordonRamsay",
+    instagram: "https://instagram.com/gordongram",
+    tiktok: "https://tiktok.com/@gordonramsayofficial",
+  },
+  {
+    name: "MrBeast",
+    handle: "@mrbeast",
+    photo: commonsPhoto("MrBeast 2023 (cropped).jpg"),
+    location: "Greenville, NC",
+    specialisations: ["YouTube", "Short-form video", "Challenges"],
+    audience: ["Gen Z", "Gamers", "Teens"],
+    rating: 4.9,
+    reviews: 7200,
+    followers: "65M",
+    rate: 1200000,
+    available: true,
+    x: "https://x.com/MrBeast",
+    instagram: "https://instagram.com/mrbeast",
+    tiktok: "https://tiktok.com/@mrbeast",
   },
 ];
 
@@ -257,7 +244,11 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 function followersToNum(f: string) {
   const n = parseFloat(f);
-  return f.toUpperCase().includes("K") ? n * 1_000 : n;
+  const u = f.toUpperCase();
+  if (u.includes("B")) return n * 1_000_000_000;
+  if (u.includes("M")) return n * 1_000_000;
+  if (u.includes("K")) return n * 1_000;
+  return n;
 }
 
 function ContactButton({
@@ -283,7 +274,86 @@ function ContactButton({
   );
 }
 
+function defaultEmailBody(c: Creator) {
+  const niche = c.specialisations[0]?.toLowerCase() ?? "content";
+  return `Hi ${c.name.split(" ")[0]},
+
+I hope this finds you well. I'm reaching out because we'd love to connect with you and have you promote our brand.
+
+We've been following your ${niche} work for a while and your audience feels like a natural fit for what we're building. We think a partnership could be genuinely valuable for both sides — authentic content that resonates with your community, and a collaboration we'd be proud to support long term.
+
+We're flexible on format and creative direction, and we'd love to hear how you like to work. If you're open to it, I'd be happy to share more about the campaign, deliverables, and budget, and to set up a quick call whenever suits you.
+
+Looking forward to hopefully working together.
+
+Warm regards,
+The Signal Team`;
+}
+
+function EmailOverlay({
+  c,
+  onClose,
+  onSend,
+}: {
+  c: Creator;
+  onClose: () => void;
+  onSend: () => void;
+}) {
+  const [to, setTo] = useState(`${c.name} (${c.handle})`);
+  const [subject, setSubject] = useState(`Partnership with ${c.name} — promote our brand`);
+  const [body, setBody] = useState(() => defaultEmailBody(c));
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return createPortal(
+    <div className="mp-email-backdrop" role="dialog" aria-modal="true" aria-label={`Email ${c.name}`} onClick={onClose}>
+      <div className="mp-email" onClick={(e) => e.stopPropagation()}>
+        <div className="mp-email-head">
+          <span className="mp-email-title">New message · {c.name}</span>
+          <button type="button" className="mp-email-x" onClick={onClose} aria-label="Close">
+            ✕
+          </button>
+        </div>
+
+        <label className="mp-email-row">
+          <span className="mp-email-label">To</span>
+          <input value={to} onChange={(e) => setTo(e.target.value)} />
+        </label>
+        <label className="mp-email-row">
+          <span className="mp-email-label">Subject</span>
+          <input value={subject} onChange={(e) => setSubject(e.target.value)} />
+        </label>
+        <textarea
+          className="mp-email-body"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          rows={14}
+          aria-label="Message"
+        />
+
+        <div className="mp-email-foot">
+          <button type="button" className="mp-email-cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="button" className="mp-email-send" onClick={onSend}>
+            Send <span className="arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 function CreatorCard({ c }: { c: Creator }) {
+  const [contacted, setContacted] = useState(false);
+  const [composing, setComposing] = useState(false);
   return (
     <article className="mp-card">
       <div className="mp-photo">
@@ -336,21 +406,49 @@ function CreatorCard({ c }: { c: Creator }) {
             <span className="mp-rate-unit">/ deliverable</span>
           </div>
           <div className="mp-contacts">
-            <ContactButton href={`mailto:${c.email}`} label={`Email ${c.name}`}>
-              <MailGlyph />
-            </ContactButton>
-            <ContactButton href={c.x} label={`${c.name} on X`}>
-              <XGlyph />
-            </ContactButton>
-            <ContactButton href={c.instagram} label={`${c.name} on Instagram`}>
-              <IgGlyph />
-            </ContactButton>
-            <ContactButton href={c.tiktok} label={`${c.name} on TikTok`}>
-              <TikTokGlyph />
-            </ContactButton>
+            {c.x && (
+              <ContactButton href={c.x} label={`${c.name} on X`}>
+                <XGlyph />
+              </ContactButton>
+            )}
+            {c.instagram && (
+              <ContactButton href={c.instagram} label={`${c.name} on Instagram`}>
+                <IgGlyph />
+              </ContactButton>
+            )}
+            {c.tiktok && (
+              <ContactButton href={c.tiktok} label={`${c.name} on TikTok`}>
+                <TikTokGlyph />
+              </ContactButton>
+            )}
           </div>
         </div>
+
+        <button
+          type="button"
+          className={`mp-agent-btn ${contacted ? "is-contacted" : ""}`}
+          onClick={() => setComposing(true)}
+          disabled={contacted}
+          aria-live="polite"
+        >
+          {contacted ? (
+            <>Agent contacted ✓</>
+          ) : (
+            <>Content Agent <span className="arrow">→</span></>
+          )}
+        </button>
       </div>
+
+      {composing && (
+        <EmailOverlay
+          c={c}
+          onClose={() => setComposing(false)}
+          onSend={() => {
+            setContacted(true);
+            setComposing(false);
+          }}
+        />
+      )}
     </article>
   );
 }
@@ -389,10 +487,10 @@ export function Marketplace() {
         {/* ---------- header ---------- */}
         <div className="mp-head">
           <span className="label label-accent mp-kicker">Creator Marketplace</span>
-          <h1>Hire UGC creators by specialisation and audience.</h1>
+          <h1>Hire creators by specialisation and audience.</h1>
           <p>
-            Browse vetted creators, compare rates and reach, then reach out directly —
-            email, X, Instagram, or TikTok.
+            Browse creators, compare reach, then connect directly on their
+            official socials — X, Instagram, or TikTok.
           </p>
         </div>
 
