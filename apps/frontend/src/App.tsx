@@ -119,10 +119,6 @@ export function App() {
               <a href="#problem">Problem</a>
               <a href="#how">How it works</a>
               <a href="#agents">The agents</a>
-              <a href="/content">Studio</a>
-              <a href="/marketplace">Marketplace</a>
-              <a href="/dashboard">Dashboard</a>
-              <a href="/chat">Assistant</a>
             </div>
             <a className="btn btn-accent" href={DEMO_URL}>
               Go to Demo <span className="arrow">→</span>

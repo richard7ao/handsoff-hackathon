@@ -4,6 +4,7 @@ import { App } from "./App";
 import { Demo } from "./Demo";
 import { Dashboard } from "./Dashboard";
 import { Content } from "./Content";
+import { Schedule } from "./Schedule";
 import { Marketplace } from "./Marketplace";
 import { Chat } from "./Chat";
 import "./index.css";
@@ -18,6 +19,8 @@ const page = path.endsWith("/chat") ? (
   <Dashboard />
 ) : path.endsWith("/content") ? (
   <Content />
+) : path.endsWith("/schedule") ? (
+  <Schedule />
 ) : path.endsWith("/marketplace") ? (
   <Marketplace />
 ) : (

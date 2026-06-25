@@ -1433,9 +1433,13 @@ section {
   display: none;
 }
 .is-rail-collapsed .rail-section {
-  text-align: center;
-  padding-inline: 0;
-  font-size: 0.58rem;
+  width: 24px;
+  height: 1px;
+  margin: 8px auto;
+  padding: 0;
+  background: var(--d-line);
+  text-indent: -9999px;
+  overflow: hidden;
 }
 .is-rail-collapsed .rail-link {
   justify-content: center;
@@ -1927,6 +1931,11 @@ section {
 .mp-head {
   max-width: 680px;
   margin-bottom: clamp(24px, 4vw, 36px);
+}
+
+.mp-kicker {
+  display: inline-block;
+  margin-bottom: 14px;
 }
 
 .mp-brand {

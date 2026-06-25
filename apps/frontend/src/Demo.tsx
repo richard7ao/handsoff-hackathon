@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AppShell } from "./Sidebar";
 
 const CONTENT_URL = "/content";
 
@@ -154,7 +155,7 @@ export function Demo() {
   const running = phase === "running";
 
   return (
-    <>
+    <AppShell current="demo">
       <main className="demo">
         <div className="wrap">
           <div className="demo-head">
@@ -292,7 +293,7 @@ export function Demo() {
           </div>
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }
 

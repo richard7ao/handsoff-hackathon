@@ -1,7 +1,5 @@
 import { useMemo, useState } from "react";
-
-const HOME_URL = "/";
-const DEMO_URL = "/demo";
+import { AppShell } from "./Sidebar";
 
 function Logo() {
   return (
@@ -385,15 +383,12 @@ export function Marketplace() {
   }, [query, active, sort]);
 
   return (
-    <main className="mp">
+    <AppShell current="marketplace">
+      <main className="mp">
       <div className="wrap">
         {/* ---------- header ---------- */}
         <div className="mp-head">
-          <a className="mp-brand" href={HOME_URL}>
-            <Logo />
-            Signal
-            <span className="mp-brand-sub">Creator Marketplace</span>
-          </a>
+          <span className="label label-accent mp-kicker">Creator Marketplace</span>
           <h1>Hire UGC creators by specialisation and audience.</h1>
           <p>
             Browse vetted creators, compare rates and reach, then reach out directly —
@@ -468,14 +463,12 @@ export function Marketplace() {
             <span>© {new Date().getFullYear()} Signal</span>
           </div>
           <div className="footer-right">
-            <a href={HOME_URL}>Home</a>
             <a href="/dashboard">Dashboard</a>
-            <a href={DEMO_URL} target="_blank" rel="noreferrer">
-              Go to Demo →
-            </a>
+            <a href="/marketplace">Marketplace</a>
           </div>
         </div>
       </footer>
-    </main>
+      </main>
+    </AppShell>
   );
 }

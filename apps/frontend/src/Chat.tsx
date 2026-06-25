@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AppShell } from "./Sidebar";
 
-const HOME_URL = "/";
 const NAME = "Richard";
 
 /* ---------------- glyphs ---------------- */
@@ -25,14 +25,6 @@ function MicGlyph({ on }: { on?: boolean }) {
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
       <rect x="9" y="3" width="6" height="11" rx="3" fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" />
       <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function SendGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path d="M4 12h14M12 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -216,28 +208,8 @@ export function Chat() {
   const empty = messages.length === 0;
 
   return (
-    <div className={`chat ${voiceMode ? "is-voice" : ""}`}>
-      <header className="topbar">
-        <div className="wrap topbar-inner">
-          <a className="brand" href={HOME_URL}>
-            <svg className="logo" viewBox="0 0 64 64" aria-hidden="true">
-              <circle cx="32" cy="32" r="21" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.35" />
-              <circle cx="32" cy="32" r="12" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.6" />
-              <circle cx="32" cy="32" r="5" fill="var(--accent)" />
-            </svg>
-            Signal
-          </a>
-          <nav className="topbar-nav">
-            <div className="topbar-links">
-              <a href={HOME_URL}>← Back to home</a>
-            </div>
-            <a className="btn btn-ghost" href={HOME_URL}>
-              Home
-            </a>
-          </nav>
-        </div>
-      </header>
-
+    <AppShell current="chat">
+      <div className={`chat ${voiceMode ? "is-voice" : ""}`}>
       <main className="chat-main">
         <div className="chat-col">
           {empty ? (
@@ -340,6 +312,7 @@ export function Chat() {
           </button>
         </div>
       )}
-    </div>
+      </div>
+    </AppShell>
   );
 }

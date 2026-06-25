@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 
-export type PageId = "dashboard" | "content" | "chat" | "marketplace" | "demo";
+export type PageId = "dashboard" | "content" | "schedule" | "chat" | "marketplace" | "demo";
 
 /* ---------------- icons ---------------- */
 
@@ -19,6 +19,15 @@ function PenIcon() {
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
       <path d="M4 20l1-4L16 5l3 3L8 19l-4 1Z" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
       <path d="M14 7l3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M3.5 9.5h17" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M8 3.5v3M16 3.5v3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -46,6 +55,15 @@ function ChatIcon() {
     </svg>
   );
 }
+function HomeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M4 11l8-6.5 8 6.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 10v9h12v-9" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M10 19v-5h4v5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  );
+}
 function CollapseIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -69,6 +87,7 @@ function ConnLight() {
 const PAGES: { id: PageId; label: string; href: string; icon: JSX.Element }[] = [
   { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: <GridIcon /> },
   { id: "content", label: "Studio", href: "/content", icon: <PenIcon /> },
+  { id: "schedule", label: "Schedule", href: "/schedule", icon: <CalendarIcon /> },
   { id: "chat", label: "Chat", href: "/chat", icon: <ChatIcon /> },
   { id: "marketplace", label: "Marketplace", href: "/marketplace", icon: <StoreIcon /> },
   { id: "demo", label: "Demo", href: "/demo", icon: <PlayIcon /> },
@@ -126,6 +145,10 @@ export function Sidebar({
       </div>
 
       <nav className="rail-nav">
+        <a href="/dashboard" className="rail-link" title="Home">
+          <span className="rail-ico"><HomeIcon /></span>
+          <span className="rail-label">Home</span>
+        </a>
         <span className="rail-section">Workspace</span>
         {PAGES.map((p) => (
           <a

@@ -1,20 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-
-const HOME_URL = "/";
-const DEMO_URL = "/demo";
+import { AppShell } from "./Sidebar";
 
 /** Same-origin API base — matches App.tsx. The backend isn't wired yet; see generate(). */
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
-
-function Logo() {
-  return (
-    <svg className="logo" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="21" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.35" />
-      <circle cx="32" cy="32" r="12" fill="none" stroke="var(--accent)" strokeWidth="3" opacity="0.6" />
-      <circle cx="32" cy="32" r="5" fill="var(--accent)" />
-    </svg>
-  );
-}
 
 /* ----------------------------- types ----------------------------- */
 
@@ -285,26 +273,7 @@ export function Content() {
   const writing = phase === "writing";
 
   return (
-    <>
-      <header className="topbar">
-        <div className="wrap topbar-inner">
-          <a className="brand" href={HOME_URL}>
-            <Logo />
-            Signal
-          </a>
-          <nav className="topbar-nav">
-            <div className="topbar-links">
-              <a href={HOME_URL}>Home</a>
-              <a href={DEMO_URL}>Demo</a>
-              <a href="/dashboard">Dashboard</a>
-            </div>
-            <a className="btn btn-ghost" href={DEMO_URL}>
-              ← Back to demo
-            </a>
-          </nav>
-        </div>
-      </header>
-
+    <AppShell current="content">
       <main className="studio">
         <div className="wrap">
           <div className="demo-head">
@@ -508,7 +477,7 @@ export function Content() {
           </p>
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }
 

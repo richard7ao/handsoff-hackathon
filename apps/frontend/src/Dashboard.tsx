@@ -212,6 +212,9 @@ export function Dashboard() {
             <span className="toolbar-sub">Autonomous marketing performance</span>
           </div>
           <div className="toolbar-actions">
+            <a className="btn btn-accent btn-sm" href="/schedule">
+              Schedule content <span className="arrow">→</span>
+            </a>
             <span className="sync-pill">
               <span className="sync-dot" /> synced {synced === 0 ? "now" : `${synced}s`}
             </span>
@@ -226,6 +229,30 @@ export function Dashboard() {
         </header>
 
         <div className="dash-scroll">
+          {/* integrations */}
+          <section id="integrations">
+            <div className="block-head">
+              <span className="card-eyebrow">Connected sources</span>
+              <span className="conn-summary">
+                <ConnLight sm /> {CHANNELS.length} live
+              </span>
+            </div>
+            <div className="int-grid">
+              {CHANNELS.map((c) => (
+                <div className="int-tile" key={c.name}>
+                  <span className="int-glyph">{c.glyph}</span>
+                  <span className="int-meta">
+                    <span className="int-name">{c.name}</span>
+                    <span className="int-handle">{c.handle}</span>
+                  </span>
+                  <span className="int-status">
+                    <ConnLight sm /> Connected
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* kpi strip */}
           <section id="overview" className="kpi-strip">
             {KPIS.map((k) => {
@@ -337,30 +364,6 @@ export function Dashboard() {
                 ))}
               </tbody>
             </table>
-          </section>
-
-          {/* integrations */}
-          <section id="integrations">
-            <div className="block-head">
-              <span className="card-eyebrow">Connected sources</span>
-              <span className="conn-summary">
-                <ConnLight sm /> {CHANNELS.length} live
-              </span>
-            </div>
-            <div className="int-grid">
-              {CHANNELS.map((c) => (
-                <div className="int-tile" key={c.name}>
-                  <span className="int-glyph">{c.glyph}</span>
-                  <span className="int-meta">
-                    <span className="int-name">{c.name}</span>
-                    <span className="int-handle">{c.handle}</span>
-                  </span>
-                  <span className="int-status">
-                    <ConnLight sm /> Connected
-                  </span>
-                </div>
-              ))}
-            </div>
           </section>
         </div>
       </main>
