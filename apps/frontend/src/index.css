@@ -1220,6 +1220,19 @@ section {
   min-width: 0;
 }
 
+/* Workspace pages sit inside the shell to the right of the rail. Left-align
+   their content against the rail and let it use the available width instead
+   of centering a narrow column (which left a large empty gutter on the left). */
+.app-shell-main .wrap {
+  margin-inline: 0;
+  max-width: 1240px;
+}
+
+.app-shell-main .chat-main {
+  justify-content: flex-start;
+  padding-inline: clamp(22px, 5vw, 44px);
+}
+
 /* flashing red connected light (shared, scoped) */
 .dash-app .conn-light,
 .app-shell .conn-light {
@@ -3944,6 +3957,7 @@ section {
 .sched-mcell {
   background: var(--panel);
   min-height: 104px;
+  min-width: 0;
   padding: 6px 7px;
   display: flex;
   flex-direction: column;
@@ -3978,7 +3992,6 @@ section {
   align-items: center;
   gap: 5px;
   min-width: 0;
-  border-left: 0;
 }
 
 .sched-mthumb {

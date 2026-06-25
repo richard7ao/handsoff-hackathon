@@ -109,8 +109,8 @@ function buildEvents(): Event[] {
 
 export function Schedule() {
   const [filter, setFilter] = useState<Status | "all">("all");
-  const [editing, setEditing] = useState(true);
-  const [view, setView] = useState<ViewMode>("month");
+  const [editing, setEditing] = useState(false);
+  const [view, setView] = useState<ViewMode>("day");
   const [allEvents, setAllEvents] = useState<Event[]>(buildEvents);
   // editor anchor — default to Monday of the current week ("Monday dd-mm-yyyy")
   const [anchor, setAnchor] = useState<Date>(() => startOfWeek(new Date()));
