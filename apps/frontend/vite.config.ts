@@ -1,9 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// In dev, proxy /api to the local Fastify server (pnpm dev:api).
-// In production on Vercel, set VITE_API_URL to the deployed api URL,
-// or use the rewrites in apps/web/vercel.json to proxy /api/* to the api project.
+// Single-page entry. The app renders the landing page or the /demo page based
+// on the URL path (see src/main.tsx). /demo falls back to index.html via the
+// SPA rewrite in public/vercel.json.
+//
+// In dev, proxy /api to the local Fastify server (pnpm dev:backend).
+// In production on Vercel, set VITE_API_URL to the deployed api URL.
 export default defineConfig({
   plugins: [react()],
   server: {
