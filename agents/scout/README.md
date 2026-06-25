@@ -39,7 +39,10 @@ so they run as-is in a fresh Modal container.
    hermes config set terminal.container_memory 5120
    hermes config set terminal.container_disk 51200
    hermes config set terminal.container_persistent true
+   hermes config set terminal.modal_mode direct   # REQUIRED: syncs skills+creds into the sandbox
    ```
+   > `modal_mode: direct` matters — the default `auto`/`managed` mode does **not**
+   > sync skill files or credentials into the Modal sandbox, so Scout would fail.
 3. **Credentials** — copy `.env.example` values into `~/.hermes/.env`
    (`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `TAVILY_API_KEY`) and make sure
    they're passed through to the sandbox. In `~/.hermes/config.yaml`:
@@ -70,14 +73,37 @@ python scout_search.py --query "..." --include-domains reddit.com \
   | python supabase_insert.py --table scout_findings
 ```
 
-Verified end-to-end, including running the full Tavily→Supabase chain from
-inside a Modal sandbox.
+### Brief-driven scouting (autonomous)
+
+Scout can pull work from the `scout_briefs` table instead of a freeform query —
+this is what the cron uses:
+
+```bash
+python scout_search.py --brief 1          # scout one brief by id
+python scout_search.py --briefs-new       # scout every brief with status='new'
+```
+
+Each brief is searched, findings are written (tagged `metadata.brief_id`), and
+the brief's `status` flips `new → done` (or `error`).
+
+### Cron (no one at the keyboard)
+
+`scout_cron.py` is the cron entry point (runs `--briefs-new`, silent when idle):
+
+```bash
+# install the script, then register the job
+cp scout_cron.py ~/.hermes/scripts/
+hermes cron create "every 10m" --name scout-briefs --script scout_cron.py --no-agent --deliver local
+hermes gateway install        # start the scheduler so it actually fires
+```
+
+See `VERIFY.md` for the end-to-end acceptance test through `hermes --tui`.
 
 ## Notes
 
 - The Supabase **service-role** key bypasses RLS — server-side only, never in
   the frontend or git.
 - `scout_findings` de-dupes on `(source, url)`, so re-running a search is safe.
-- Default search is freeform `--query`. A `--brief` mode (build the query from a
-  business brief: niche + city) is a planned follow-up once the brief schema
-  from Jack/intake is settled.
+- Scripts auto-load `~/.hermes/.env`, so they work under cron without a sourced
+  environment.
+- Verified end-to-end (incl. inside a Modal sandbox) and the brief→cron loop.
