@@ -36,7 +36,7 @@ export function buildApp(): FastifyInstance {
     return {
       status: "ok",
       timestamp: Date.now(),
-      service: "handsoff-api",
+      service: "handsoff-backend",
     };
   });
 
@@ -65,7 +65,7 @@ export function buildApp(): FastifyInstance {
   });
 
   app.get("/", async () => {
-    return { name: "handsoff-api", endpoints: ["/api/health", "/api/content"] };
+    return { name: "handsoff-backend", endpoints: ["/api/health", "/api/content"] };
   });
 
   return app;

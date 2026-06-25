@@ -4,12 +4,12 @@
   "private": true,
   "description": "Mock monorepo with Vite + React frontend and Fastify backend, deployed on Vercel.",
   "scripts": {
-    "dev:web": "pnpm --filter @handsoff/web dev",
-    "dev:api": "pnpm --filter @handsoff/api dev",
-    "build:web": "pnpm --filter @handsoff/web build",
-    "build:api": "pnpm --filter @handsoff/api build",
-    "build": "pnpm build:api && pnpm build:web",
-    "preview:web": "pnpm --filter @handsoff/web preview",
+    "dev:frontend": "pnpm --filter @handsoff/frontend dev",
+    "dev:backend": "pnpm --filter @handsoff/backend dev",
+    "build:frontend": "pnpm --filter @handsoff/frontend build",
+    "build:backend": "pnpm --filter @handsoff/backend build",
+    "build": "pnpm build:backend && pnpm build:frontend",
+    "preview:frontend": "pnpm --filter @handsoff/frontend preview",
     "lint": "pnpm -r --if-present lint"
   },
   "packageManager": "pnpm@11.9.0",
