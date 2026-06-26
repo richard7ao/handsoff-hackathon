@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { buildApp } from "./app.js";
+import { buildApp } from "../api/index.ts";
 
 // Minimal .env loader for local dev (no dependency). Vercel injects real env vars.
 function loadEnv() {
